@@ -117,7 +117,9 @@ const columns: GridColDef<BillingRecord>[] = [
     field: "amount",
     headerName: "請求金額",
     width: 150,
-    valueFormatter: (params) => formatter.format(params.value as number),
+    type: "number",
+    valueFormatter: (value: number | null | undefined) =>
+      typeof value === "number" ? formatter.format(value) : "-",
   },
   {
     field: "approvalStatus",
@@ -185,7 +187,7 @@ export default function BillingPage() {
 
         <Grid container spacing={3}>
           {summary.map((item) => (
-            <Grid item xs={12} md={4} key={item.title}>
+            <Grid size={{ xs: 12, md: 4 }} key={item.title}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary">
@@ -234,7 +236,7 @@ export default function BillingPage() {
             </Stack>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ height: 480 }}>
-              <DataGrid
+              <DataGrid<BillingRecord>
                 rows={billingRows}
                 columns={columns}
                 disableRowSelectionOnClick
@@ -252,4 +254,3 @@ export default function BillingPage() {
     </ManagementLayout>
   );
 }
-

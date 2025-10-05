@@ -80,7 +80,7 @@ export default function UploadsPage() {
         </Box>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Stack spacing={3} alignItems="center" textAlign="center">
@@ -110,7 +110,7 @@ export default function UploadsPage() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Stack spacing={3}>
               <Alert severity="info" sx={{ borderRadius: 2 }}>
                 <Typography variant="body2">

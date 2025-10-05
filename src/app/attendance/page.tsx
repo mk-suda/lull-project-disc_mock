@@ -285,7 +285,7 @@ export default function AttendancePage() {
             編集後は自動的にドラフト保存されます。照合結果が不一致の場合はアラート表示で案内します。
           </Typography>
           <Box sx={{ height: 480, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
-            <DataGrid
+            <DataGrid<AttendanceRecord>
               rows={mockRecords}
               columns={columns}
               disableRowSelectionOnClick

@@ -214,7 +214,7 @@ export default function DashboardPage() {
           {kpiCards.map((card) => {
             const IconComponent = card.icon;
             return (
-              <Grid item xs={12} sm={6} lg={3} key={card.label}>
+              <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={card.label}>
                 <Card variant="outlined" sx={{ height: "100%" }}>
                   <CardContent>
                     <Stack spacing={2}>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
         </Grid>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} alignItems={{ xs: "flex-start", sm: "center" }}>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom>
@@ -349,7 +349,7 @@ export default function DashboardPage() {
         </Grid>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom>
@@ -407,7 +407,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom>
@@ -456,7 +456,7 @@ export default function DashboardPage() {
         </Grid>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -496,7 +496,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Stack spacing={3}>
               <Card variant="outlined">
                 <CardContent>

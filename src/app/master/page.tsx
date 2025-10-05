@@ -148,7 +148,7 @@ export default function MasterPage() {
 
                   <Grid container spacing={3}>
                     {category.metrics.map((metric) => (
-                      <Grid item xs={12} sm={6} md={4} key={metric.label}>
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={metric.label}>
                         <Card variant="outlined">
                           <CardContent>
                             <Typography variant="subtitle2" color="text.secondary">

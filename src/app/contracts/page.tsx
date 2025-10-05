@@ -104,7 +104,9 @@ const columns: GridColDef<ContractRecord>[] = [
     field: "monthlyAmount",
     headerName: "月額 (税抜)",
     width: 150,
-    valueFormatter: (params) => currencyFormatter.format(params.value as number),
+    type: "number",
+    valueFormatter: (value: number | null | undefined) =>
+      typeof value === "number" ? currencyFormatter.format(value) : "-",
   },
   {
     field: "status",
@@ -155,7 +157,7 @@ export default function ContractsPage() {
 
         <Grid container spacing={3}>
           {summaryCards.map((card) => (
-            <Grid item xs={12} md={4} key={card.title}>
+            <Grid size={{ xs: 12, md: 4 }} key={card.title}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="subtitle2" color="text.secondary">
@@ -192,7 +194,7 @@ export default function ContractsPage() {
               </Stack>
             </Stack>
             <Box sx={{ height: 480 }}>
-              <DataGrid
+              <DataGrid<ContractRecord>
                 rows={contractRows}
                 columns={columns}
                 disableRowSelectionOnClick
@@ -210,4 +212,3 @@ export default function ContractsPage() {
     </ManagementLayout>
   );
 }
-
