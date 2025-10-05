@@ -130,7 +130,8 @@ const columns: GridColDef<AttendanceRecord>[] = [
     field: "workPeriod",
     headerName: "対象月",
     width: 120,
-    valueFormatter: ({ value }) => (value ? `${value.replace("-", "年")}月` : "-"),
+    type: "string",
+    valueFormatter: (value: string) => (value ? `${value.replace("-", "年")}月` : "-"),
   },
   {
     field: "totalWorkHours",
@@ -140,7 +141,8 @@ const columns: GridColDef<AttendanceRecord>[] = [
     editable: true,
     align: "right",
     headerAlign: "right",
-    valueFormatter: ({ value }) => (typeof value === "number" ? value.toFixed(1) : value ?? "-"),
+    valueFormatter: (value: number | string | undefined) =>
+      typeof value === "number" ? value.toFixed(1) : value ?? "-",
     preProcessEditCellProps: (params) => {
       const value = Number(params.props.value);
       const hasError = Number.isNaN(value) || value < 0 || value > 200;
@@ -162,14 +164,14 @@ const columns: GridColDef<AttendanceRecord>[] = [
     width: 160,
     align: "right",
     headerAlign: "right",
-    valueFormatter: ({ value }) =>
+    valueFormatter: (value: number | string | undefined) =>
       typeof value === "number"
         ? value.toLocaleString("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 })
-        : value,
+        : (value as string | undefined) ?? "",
     cellClassName: (params) =>
       params.row.validationIssues?.some((issue) => issue.field === "expectedBillingAmount")
         ? "cell-error"
-        : undefined,
+        : "",
   },
   {
     field: "approvalStatus",
