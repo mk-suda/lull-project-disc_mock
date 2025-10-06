@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -227,46 +227,7 @@ const gridSx = {
   },
 };
 
-type AlertType = "absent" | "work_error" | "pto_pending" | "ot_pending";
-interface AlertItem {
-  id: string;
-  type: AlertType;
-  name: string;
-  department: string;
-  date: string;
-  detail?: string;
-}
-
-const alertItems: AlertItem[] = [
-  { id: "AL-1", type: "absent", name: "山田 太郎", department: "テックフラッグ事業部", date: "2025-09-15" },
-  { id: "AL-2", type: "absent", name: "佐藤 花子", department: "管理事業部", date: "2025-09-16" },
-  { id: "AL-3", type: "work_error", name: "高橋 健", department: "DC事業部", date: "2025-09-10", detail: "打刻重複" },
-  { id: "AL-4", type: "pto_pending", name: "山田 太郎", department: "テックフラッグ事業部", date: "2025-09-20", detail: "有給: 終日" },
-  { id: "AL-5", type: "ot_pending", name: "佐藤 花子", department: "管理事業部", date: "2025-09-18", detail: "残業: +2.0h" },
-];
-
-const alertMeta: Record<AlertType, { label: string; color: "primary" | "secondary" | "warning" | "error"; icon: React.ElementType; status: string }> = {
-  absent: { label: "未出勤", color: "warning", icon: WarningAmberIcon, status: "要確認" },
-  work_error: { label: "勤務登録エラー", color: "error", icon: ErrorOutlineIcon, status: "差戻し" },
-  pto_pending: { label: "有給申請 未承認", color: "primary", icon: WatchLaterIcon, status: "承認待ち" },
-  ot_pending: { label: "残業申請 未承認", color: "secondary", icon: WatchLaterIcon, status: "承認待ち" },
-};
-
-type RequestStatus = "pending" | "approved" | "rejected";
-interface PTORequest { id: string; name: string; department: string; date: string; kind: "終日" | "午前" | "午後"; status: RequestStatus }
-interface OTRequest { id: string; name: string; department: string; date: string; hours: number; reason?: string; status: RequestStatus }
-
-const ptoRequests: PTORequest[] = [
-  { id: "PTO-1", name: "山田 太郎", department: "テックフラッグ事業部", date: "2025-09-20", kind: "終日", status: "pending" },
-  { id: "PTO-2", name: "佐藤 花子", department: "管理事業部", date: "2025-09-22", kind: "午後", status: "approved" },
-];
-
-const otRequests: OTRequest[] = [
-  { id: "OT-1", name: "佐藤 花子", department: "管理事業部", date: "2025-09-18", hours: 2.0, reason: "月次対応", status: "pending" },
-  { id: "OT-2", name: "高橋 健", department: "DC事業部", date: "2025-09-12", hours: 1.5, status: "approved" },
-];
-
-export default function AttendancePage() {
+function AttendanceContent() {
   const searchParams = useSearchParams();
   const approvalParam = searchParams.get("approval");
   const approvals = approvalParam
@@ -317,218 +278,87 @@ export default function AttendancePage() {
     [currentMonth, otStatusFilter]
   );
   return (
-    <ManagementLayout title="勤務情報登録">
-      <Stack spacing={4}>
-        <Box></Box>
+    <Stack spacing={4}>
+      <Box></Box>
 
-        <Card variant="outlined">
-          <CardContent>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', md: 'center' }}>
-              {/* サマリー4件 */}
-              <Stack direction="row" spacing={1.5} flexWrap="wrap">
-                {(["absent","work_error","pto_pending","ot_pending"] as AlertType[]).map((t) => {
-                  const meta = alertMeta[t];
-                  return (
-                    <Chip
-                      key={t}
-                      icon={React.createElement(meta.icon, { fontSize: 'small' })}
-                      label={`${meta.label} ${countByType[t]}件`}
-                      color={meta.color}
-                      onClick={() => {
-                        if (t === 'absent' || t === 'work_error') {
-                          setActiveTab(0);
-                          setAlertTypeFilter(t);
-                        } else if (t === 'pto_pending') {
-                          setActiveTab(1);
-                          setPtoStatusFilter(['pending']);
-                        } else {
-                          setActiveTab(2);
-                          setOtStatusFilter(['pending']);
-                        }
-                      }}
-                      clickable
-                      variant="filled"
-                      sx={{ mr: 0.5 }}
-                    />
-                  );
-                })}
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
-
-        <Stack spacing={2}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography variant="h5" component="h2" color="text.primary">
-              勤務実績データ
-            </Typography>
-            <Button variant="contained" color="primary">
-              新規レコードを追加
-            </Button>
-          </Box>
-          {/* タブ */}
-          <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} aria-label="勤怠メニュー">
-            <Tab label="勤務実績" />
-            <Tab label="有給申請一覧" />
-            <Tab label="残業申請一覧" />
-          </Tabs>
-
-          {/* タブ: 勤務実績 */}
-          {activeTab === 0 && (
-            <>
-              <Box display="flex" gap={2} alignItems="center">
-                <FormControl size="small" sx={{ minWidth: 220 }}>
-                  <InputLabel id="project-filter-label">案件で絞り込み</InputLabel>
-                  <Select
-                    labelId="project-filter-label"
-                    label="案件で絞り込み"
-                    value={projectFilter}
-                    onChange={(e) => setProjectFilter(e.target.value)}
-                  >
-                    <MenuItem value="all">すべての案件</MenuItem>
-                    {projectOptions.map(([id, name]) => (
-                      <MenuItem key={id} value={id}>{`${id} / ${name}`}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl size="small" sx={{ minWidth: 200 }}>
-                  <InputLabel id="alert-type-filter-label">種別で絞り込み</InputLabel>
-                  <Select
-                    labelId="alert-type-filter-label"
-                    label="種別で絞り込み"
-                    value={alertTypeFilter}
-                    onChange={(e) => setAlertTypeFilter(e.target.value as any)}
-                  >
-                    <MenuItem value="all">すべて</MenuItem>
-                    <MenuItem value="absent">未出勤</MenuItem>
-                    <MenuItem value="work_error">勤務登録エラー</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                編集後は自動的にドラフト保存されます。照合結果が不一致の場合はアラート表示で案内します。
+      <Card variant="outlined">
+        <CardContent>
+          <Stack direction="row" spacing={3} alignItems="center">
+            <Box
+              sx={{
+                flex: 1,
+                border: "1px dashed",
+                borderColor: "secondary.main",
+                borderRadius: 2,
+                p: 4,
+                textAlign: "center",
+                backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.04),
+              }}
+            >
+              <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
+              <Typography variant="h6" gutterBottom>
+                PDF勤務表をドラッグ＆ドロップ
               </Typography>
-              <Box sx={{ height: 480, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
-                <DataGrid<AttendanceRecord>
-                  rows={filteredRows}
-                  columns={columns}
-                  disableRowSelectionOnClick
-                  checkboxSelection
-                  pageSizeOptions={[5, 10]}
-                  initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-                  sx={gridSx}
-                />
-              </Box>
-            </>
-          )}
+              <Typography variant="body2" color="text.secondary">
+                PDF形式の勤務管理表原本をアップロードしてください。複数ファイルの一括登録に対応予定です。
+              </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<UploadFileIcon />}
+                sx={{ mt: 3 }}
+                component="label"
+              >
+                ファイルを選択
+                <input hidden accept="application/pdf" multiple type="file" />
+              </Button>
+            </Box>
+          </Stack>
+        </CardContent>
+        <CardActions sx={{ justifyContent: "space-between" }}>
+          <Alert icon={<InfoOutlinedIcon fontSize="small" />} severity="info" sx={{ flex: 1, mr: 2 }}>
+            処理中のファイルは自動でOCR解析され、照合ステータスに反映されます。
+          </Alert>
+          <Button variant="outlined" color="secondary" component={Link} href="/uploads">
+            直近のアップロード履歴を見る
+          </Button>
+        </CardActions>
+      </Card>
 
-          {/* タブ: 有給申請一覧 */}
-          {activeTab === 1 && (
-            <>
-              <FormControl size="small" sx={{ minWidth: 280 }}>
-                <InputLabel id="pto-status-filter">ステータス（複数選択可）</InputLabel>
-                <Select
-                  labelId="pto-status-filter"
-                  label="ステータス（複数選択可）"
-                  multiple
-                  value={ptoStatusFilter}
-                  onChange={(e) => {
-                    const v = e.target.value as string[];
-                    const all: RequestStatus[] = ['pending','approved','rejected'];
-                    if (v.includes('all')) {
-                      setPtoStatusFilter(all);
-                    } else {
-                      setPtoStatusFilter(v as RequestStatus[]);
-                    }
-                  }}
-                  renderValue={(selected) => {
-                    const arr = selected as string[];
-                    const all: string[] = ['pending','approved','rejected'];
-                    if (arr.length === all.length) return '全て';
-                    return arr.map((s) => (({ pending: '未承認', approved: '承認', rejected: '差戻し' } as Record<string,string>)[s] || s)).join(', ');
-                  }}
-                >
-                  <MenuItem value="all">全て</MenuItem>
-                  <MenuItem value="pending">未承認</MenuItem>
-                  <MenuItem value="approved">承認</MenuItem>
-                  <MenuItem value="rejected">差戻し</MenuItem>
-                </Select>
-              </FormControl>
-              <Box sx={{ height: 420, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
-                <DataGrid
-                  rows={ptoFiltered.map((r, i) => ({ id: r.id, name: r.name, department: r.department, date: r.date, kind: r.kind, status: r.status }))}
-                  columns={[
-                    { field: 'name', headerName: '社員名', flex: 1, minWidth: 140 },
-                    { field: 'department', headerName: '部門', flex: 1, minWidth: 160 },
-                    { field: 'date', headerName: '申請日', width: 120 },
-                    { field: 'kind', headerName: '区分', width: 100 },
-                    { field: 'status', headerName: 'ステータス', width: 140, renderCell: (p: any) => (
-                      <Chip size="small" label={(p.value === 'pending' ? '未承認' : p.value === 'approved' ? '承認' : '差戻し')} color={p.value === 'pending' ? 'primary' : p.value === 'approved' ? 'success' : 'error'} />
-                    ) },
-                  ]}
-                  disableRowSelectionOnClick
-                  pageSizeOptions={[5, 10]}
-                  initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-                />
-              </Box>
-            </>
-          )}
-
-          {/* タブ: 残業申請一覧 */}
-          {activeTab === 2 && (
-            <>
-              <FormControl size="small" sx={{ minWidth: 280 }}>
-                <InputLabel id="ot-status-filter">ステータス（複数選択可）</InputLabel>
-                <Select
-                  labelId="ot-status-filter"
-                  label="ステータス（複数選択可）"
-                  multiple
-                  value={otStatusFilter}
-                  onChange={(e) => {
-                    const v = e.target.value as string[];
-                    const all: RequestStatus[] = ['pending','approved','rejected'];
-                    if (v.includes('all')) {
-                      setOtStatusFilter(all);
-                    } else {
-                      setOtStatusFilter(v as RequestStatus[]);
-                    }
-                  }}
-                  renderValue={(selected) => {
-                    const arr = selected as string[];
-                    const all: string[] = ['pending','approved','rejected'];
-                    if (arr.length === all.length) return '全て';
-                    return arr.map((s) => (({ pending: '未承認', approved: '承認', rejected: '差戻し' } as Record<string,string>)[s] || s)).join(', ');
-                  }}
-                >
-                  <MenuItem value="all">全て</MenuItem>
-                  <MenuItem value="pending">未承認</MenuItem>
-                  <MenuItem value="approved">承認</MenuItem>
-                  <MenuItem value="rejected">差戻し</MenuItem>
-                </Select>
-              </FormControl>
-              <Box sx={{ height: 420, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
-                <DataGrid
-                  rows={otFiltered.map((r) => ({ id: r.id, name: r.name, department: r.department, date: r.date, hours: r.hours, reason: r.reason ?? '', status: r.status }))}
-                  columns={[
-                    { field: 'name', headerName: '社員名', flex: 1, minWidth: 140 },
-                    { field: 'department', headerName: '部門', flex: 1, minWidth: 160 },
-                    { field: 'date', headerName: '申請日', width: 120 },
-                    { field: 'hours', headerName: '時間 (h)', width: 120, type: 'number' },
-                    { field: 'reason', headerName: '理由', flex: 1, minWidth: 180 },
-                    { field: 'status', headerName: 'ステータス', width: 140, renderCell: (p: any) => (
-                      <Chip size="small" label={(p.value === 'pending' ? '未承認' : p.value === 'approved' ? '承認' : '差戻し')} color={p.value === 'pending' ? 'secondary' : p.value === 'approved' ? 'success' : 'error'} />
-                    ) },
-                  ]}
-                  disableRowSelectionOnClick
-                  pageSizeOptions={[5, 10]}
-                  initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-                />
-              </Box>
-            </>
-          )}
-          
-        </Stack>
+      <Stack spacing={2}>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Typography variant="h5" component="h2" color="text.primary">
+            勤務実績データ
+          </Typography>
+          <Button variant="contained" color="primary">
+            新規レコードを追加
+          </Button>
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          編集後は自動的にドラフト保存されます。照合結果が不一致の場合はアラート表示で案内します。
+        </Typography>
+        <Box sx={{ height: 480, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+          <DataGrid<AttendanceRecord>
+            rows={rows}
+            columns={columns}
+            disableRowSelectionOnClick
+            checkboxSelection
+            pageSizeOptions={[5, 10]}
+            initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
+            sx={gridSx}
+          />
+        </Box>
       </Stack>
+    </Stack>
+  );
+}
+
+export default function AttendancePage() {
+  return (
+    <ManagementLayout title="勤務情報登録 / アップロード">
+      <Suspense fallback={<Typography variant="body2">loading...</Typography>}>
+        <AttendanceContent />
+      </Suspense>
     </ManagementLayout>
   );
 }
