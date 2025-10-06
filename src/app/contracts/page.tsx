@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ManagementLayout from "../../components/layout/ManagementLayout";
@@ -143,7 +144,7 @@ const summaryCards = [
   },
 ];
 
-export default function ContractsPage() {
+function ContractsContent() {
   const searchParams = useSearchParams();
   const statusParam = searchParams.get("status");
   const plannedParam = searchParams.get("planned");
@@ -163,7 +164,6 @@ export default function ContractsPage() {
       })
     : baseRows;
   return (
-    <ManagementLayout title="契約台帳">
       <Stack spacing={4}>
         <Box></Box>
 
@@ -223,6 +223,15 @@ export default function ContractsPage() {
           </CardContent>
         </Card>
       </Stack>
+  );
+}
+
+export default function ContractsPage() {
+  return (
+    <ManagementLayout title="契約台帳">
+      <Suspense fallback={<Typography variant="body2">loading...</Typography>}>
+        <ContractsContent />
+      </Suspense>
     </ManagementLayout>
   );
 }

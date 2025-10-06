@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -218,7 +218,7 @@ const gridSx = {
   },
 };
 
-export default function AttendancePage() {
+function AttendanceContent() {
   const searchParams = useSearchParams();
   const approvalParam = searchParams.get("approval");
   const approvals = approvalParam
@@ -226,79 +226,87 @@ export default function AttendancePage() {
     : undefined;
   const rows = approvals && approvals.length > 0 ? mockRecords.filter((r) => approvals.includes(r.approvalStatus)) : mockRecords;
   return (
-    <ManagementLayout title="勤務情報登録 / アップロード">
-      <Stack spacing={4}>
-        <Box></Box>
+    <Stack spacing={4}>
+      <Box></Box>
 
-        <Card variant="outlined">
-          <CardContent>
-            <Stack direction="row" spacing={3} alignItems="center">
-              <Box
-                sx={{
-                  flex: 1,
-                  border: "1px dashed",
-                  borderColor: "secondary.main",
-                  borderRadius: 2,
-                  p: 4,
-                  textAlign: "center",
-                  backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.04),
-                }}
+      <Card variant="outlined">
+        <CardContent>
+          <Stack direction="row" spacing={3} alignItems="center">
+            <Box
+              sx={{
+                flex: 1,
+                border: "1px dashed",
+                borderColor: "secondary.main",
+                borderRadius: 2,
+                p: 4,
+                textAlign: "center",
+                backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.04),
+              }}
+            >
+              <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
+              <Typography variant="h6" gutterBottom>
+                PDF勤務表をドラッグ＆ドロップ
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                PDF形式の勤務管理表原本をアップロードしてください。複数ファイルの一括登録に対応予定です。
+              </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<UploadFileIcon />}
+                sx={{ mt: 3 }}
+                component="label"
               >
-                <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
-                <Typography variant="h6" gutterBottom>
-                  PDF勤務表をドラッグ＆ドロップ
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  PDF形式の勤務管理表原本をアップロードしてください。複数ファイルの一括登録に対応予定です。
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<UploadFileIcon />}
-                  sx={{ mt: 3 }}
-                  component="label"
-                >
-                  ファイルを選択
-                  <input hidden accept="application/pdf" multiple type="file" />
-                </Button>
-              </Box>
-            </Stack>
-          </CardContent>
-          <CardActions sx={{ justifyContent: "space-between" }}>
-            <Alert icon={<InfoOutlinedIcon fontSize="small" />} severity="info" sx={{ flex: 1, mr: 2 }}>
-              処理中のファイルは自動でOCR解析され、照合ステータスに反映されます。
-            </Alert>
-            <Button variant="outlined" color="secondary" component={Link} href="/uploads">
-              直近のアップロード履歴を見る
-            </Button>
-          </CardActions>
-        </Card>
+                ファイルを選択
+                <input hidden accept="application/pdf" multiple type="file" />
+              </Button>
+            </Box>
+          </Stack>
+        </CardContent>
+        <CardActions sx={{ justifyContent: "space-between" }}>
+          <Alert icon={<InfoOutlinedIcon fontSize="small" />} severity="info" sx={{ flex: 1, mr: 2 }}>
+            処理中のファイルは自動でOCR解析され、照合ステータスに反映されます。
+          </Alert>
+          <Button variant="outlined" color="secondary" component={Link} href="/uploads">
+            直近のアップロード履歴を見る
+          </Button>
+        </CardActions>
+      </Card>
 
-        <Stack spacing={2}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography variant="h5" component="h2" color="text.primary">
-              勤務実績データ
-            </Typography>
-            <Button variant="contained" color="primary">
-              新規レコードを追加
-            </Button>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            編集後は自動的にドラフト保存されます。照合結果が不一致の場合はアラート表示で案内します。
+      <Stack spacing={2}>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Typography variant="h5" component="h2" color="text.primary">
+            勤務実績データ
           </Typography>
-          <Box sx={{ height: 480, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
-            <DataGrid<AttendanceRecord>
-              rows={rows}
-              columns={columns}
-              disableRowSelectionOnClick
-              checkboxSelection
-              pageSizeOptions={[5, 10]}
-              initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-              sx={gridSx}
-            />
-          </Box>
-        </Stack>
+          <Button variant="contained" color="primary">
+            新規レコードを追加
+          </Button>
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          編集後は自動的にドラフト保存されます。照合結果が不一致の場合はアラート表示で案内します。
+        </Typography>
+        <Box sx={{ height: 480, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+          <DataGrid<AttendanceRecord>
+            rows={rows}
+            columns={columns}
+            disableRowSelectionOnClick
+            checkboxSelection
+            pageSizeOptions={[5, 10]}
+            initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
+            sx={gridSx}
+          />
+        </Box>
       </Stack>
+    </Stack>
+  );
+}
+
+export default function AttendancePage() {
+  return (
+    <ManagementLayout title="勤務情報登録 / アップロード">
+      <Suspense fallback={<Typography variant="body2">loading...</Typography>}>
+        <AttendanceContent />
+      </Suspense>
     </ManagementLayout>
   );
 }
