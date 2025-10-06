@@ -8,6 +8,8 @@ import {
   Divider,
   Drawer,
   IconButton,
+  Select,
+  MenuItem,
   List,
   ListItem,
   ListItemButton,
@@ -25,42 +27,21 @@ import MenuIcon from "@mui/icons-material/Menu";
 import PunchClockIcon from "@mui/icons-material/PunchClock";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
+import { ThemeSchemeContext } from "../../theme/AppThemeProvider";
+import type { SchemeKey } from "../../theme/colorSchemes";
 
 const drawerWidth = 260;
 
 // TODO: Implement role-based visibility for navigation items when permissions are wired up.
 const navigationItems = [
-  {
-    label: "ダッシュボード",
-    icon: <DashboardIcon fontSize="small" />,
-    href: "/dashboard",
-  },
-  {
-    label: "顧客契約管理",
-    icon: <GroupsIcon fontSize="small" />,
-    href: "/contracts",
-  },
-  {
-    label: "勤務情報登録",
-    icon: <PunchClockIcon fontSize="small" />,
-    href: "/attendance",
-  },
-  {
-    label: "請求管理",
-    icon: <ReceiptLongIcon fontSize="small" />,
-    href: "/billing",
-  },
-  {
-    label: "マスタ管理",
-    icon: <SettingsApplicationsIcon fontSize="small" />,
-    href: "/master",
-  },
-  {
-    label: "原本アップロード",
-    icon: <DescriptionIcon fontSize="small" />,
-    href: "/uploads",
-  },
-] as const;
+  { label: "ダッシュボード", icon: <DashboardIcon fontSize="small" />, href: "/dashboard" },
+  { label: "顧客管理", icon: <GroupsIcon fontSize="small" />, href: "/customers" },
+  { label: "契約管理", icon: <GroupsIcon fontSize="small" />, href: "/contracts" },
+  { label: "勤務情報登録", icon: <PunchClockIcon fontSize="small" />, href: "/attendance" },
+  { label: "請求管理", icon: <ReceiptLongIcon fontSize="small" />, href: "/billing" },
+  { label: "マスタ管理", icon: <SettingsApplicationsIcon fontSize="small" />, href: "/master" },
+  { label: "原本アップロード", icon: <DescriptionIcon fontSize="small" />, href: "/uploads" },
+];
 
 export interface ManagementLayoutProps {
   title?: string;
@@ -100,11 +81,39 @@ export default function ManagementLayout({
             >
               <MenuIcon />
             </IconButton>
+        )}
+        <Typography variant="h6" noWrap component="div">
+          {title}
+        </Typography>
+        <Box sx={{ flexGrow: 1 }} />
+        <ThemeSchemeContext.Consumer>
+          {(ctx) => (
+            <Select
+              size="small"
+              value={(ctx?.scheme ?? "default") as SchemeKey}
+              onChange={(e) => ctx?.setScheme(e.target.value as SchemeKey)}
+              variant="outlined"
+              sx={{
+                ml: 2,
+                minWidth: 150,
+                color: "inherit",
+                "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.6)" },
+                "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.8)" },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#fff" },
+                "& .MuiSelect-icon": { color: "inherit" },
+                bgcolor: "transparent",
+              }}
+              aria-label="カラーパターンを選択"
+            >
+              <MenuItem value="default">Default</MenuItem>
+              <MenuItem value="teal">Teal</MenuItem>
+              <MenuItem value="royal">Apricot</MenuItem>
+              <MenuItem value="dark">Dark</MenuItem>
+              <MenuItem value="blossom">Blossom Pink</MenuItem>
+            </Select>
           )}
-          <Typography variant="h6" noWrap component="div">
-            {title}
-          </Typography>
-        </Toolbar>
+        </ThemeSchemeContext.Consumer>
+      </Toolbar>
       </AppBar>
 
       <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }} aria-label="サイドバー">
