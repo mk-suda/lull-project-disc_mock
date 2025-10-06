@@ -3,9 +3,10 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import WatchLaterIcon from "@mui/icons-material/WatchLater";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   Alert,
   Box,
@@ -16,6 +17,14 @@ import {
   Chip,
   Stack,
   Typography,
+  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
@@ -185,7 +194,7 @@ const columns: GridColDef<AttendanceRecord>[] = [
         size="small"
         label={approvalLabelMap[params.value ?? "pending"]}
         color={params.value === "approved" ? "success" : params.value === "rejected" ? "error" : "default"}
-        variant={params.value === "approved" ? "filled" : "outlined"}
+        variant={params.value === "approved" || params.value === "rejected" ? "filled" : "outlined"}
       />
     ),
   },
@@ -207,7 +216,7 @@ const columns: GridColDef<AttendanceRecord>[] = [
 
 const gridSx = {
   "& .cell-error": {
-    color: "error.main",
+    color: (theme: Theme) => (theme.palette.error.contrastText ?? theme.palette.error.main),
     fontWeight: 600,
   },
   "& .MuiDataGrid-row": {
@@ -225,6 +234,49 @@ function AttendanceContent() {
     ? (approvalParam.split(",").filter(Boolean) as AttendanceApprovalStatus[])
     : undefined;
   const rows = approvals && approvals.length > 0 ? mockRecords.filter((r) => approvals.includes(r.approvalStatus)) : mockRecords;
+  const [activeTab, setActiveTab] = React.useState<number>(0);
+  const [projectFilter, setProjectFilter] = React.useState<string>("all");
+  const [alertTypeFilter, setAlertTypeFilter] = React.useState<"all" | "absent" | "work_error">("all");
+  const projectOptions = React.useMemo(() => {
+    const set = new Map<string, string>();
+    rows.forEach((r) => set.set(r.projectId, r.projectName));
+    return Array.from(set.entries());
+  }, [rows]);
+  const currentMonth = React.useMemo(() => (rows[0]?.workPeriod ?? new Date().toISOString().slice(0, 7)), [rows]);
+  const namesInScope = React.useMemo(() => new Set(rows.map((r) => r.employeeName)), [rows]);
+  const alertInScope = React.useMemo(
+    () =>
+      alertItems.filter(
+        (a) => a.date.startsWith(currentMonth) && namesInScope.has(a.name)
+      ),
+    [currentMonth, namesInScope]
+  );
+
+  const filteredRows = React.useMemo(() => {
+    let base = rows.filter((r) => (projectFilter === "all" ? true : r.projectId === projectFilter));
+    if (alertTypeFilter !== "all") {
+      const names = new Set(alertInScope.filter((a) => a.type === alertTypeFilter).map((a) => a.name));
+      base = base.filter((r) => names.has(r.employeeName));
+    }
+    return base;
+  }, [rows, projectFilter, alertTypeFilter, alertInScope]);
+
+  const countByType = React.useMemo(() => {
+    const map: Record<AlertType, number> = { absent: 0, work_error: 0, pto_pending: 0, ot_pending: 0 };
+    for (const a of alertInScope) map[a.type] += 1;
+    return map;
+  }, [alertInScope]);
+
+  const [ptoStatusFilter, setPtoStatusFilter] = React.useState<RequestStatus[]>([]);
+  const [otStatusFilter, setOtStatusFilter] = React.useState<RequestStatus[]>([]);
+  const ptoFiltered = React.useMemo(() =>
+    ptoRequests.filter((r) => r.date.startsWith(currentMonth) && (ptoStatusFilter.length ? ptoStatusFilter.includes(r.status) : true)),
+    [currentMonth, ptoStatusFilter]
+  );
+  const otFiltered = React.useMemo(() =>
+    otRequests.filter((r) => r.date.startsWith(currentMonth) && (otStatusFilter.length ? otStatusFilter.includes(r.status) : true)),
+    [currentMonth, otStatusFilter]
+  );
   return (
     <Stack spacing={4}>
       <Box></Box>

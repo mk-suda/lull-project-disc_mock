@@ -63,7 +63,7 @@ const kpiCards = [
     value: "8件",
     helper: "最終承認待ち",
     chipLabel: "差戻し 2件",
-    chipColor: "default" as const,
+    chipColor: "error" as const,
     icon: AccessTimeFilledIcon,
     chipHref: "/attendance?approval=pending,rejected",
   },
@@ -174,20 +174,35 @@ export default function DashboardPage() {
   const secG = parseInt(sec.slice(3, 5), 16);
   const secB = parseInt(sec.slice(5, 7), 16);
   const secRgba = (a: number) => `rgba(${secR}, ${secG}, ${secB}, ${a})`;
+  const axisColor = theme.palette.mode === "dark" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.38)";
+  const gridColor = theme.palette.mode === "dark" ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.08)";
+  const labelColor = theme.palette.mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.54)";
   const maxRevenue = Math.max(...monthlyRevenueTrend.map((item) => item.amount));
   const latestRevenue = monthlyRevenueTrend[monthlyRevenueTrend.length - 1];
   const previousRevenue = monthlyRevenueTrend[monthlyRevenueTrend.length - 2];
   const revenueGrowthRate = ((latestRevenue.amount - previousRevenue.amount) / previousRevenue.amount) * 100;
 
+  const plotLeft = 6;
+  const plotRight = 94;
+  const plotWidth = plotRight - plotLeft;
+
   const chartPolylinePoints = monthlyRevenueTrend
     .map((item, index) => {
-      const x = (index / (monthlyRevenueTrend.length - 1)) * 100;
+      const x = plotLeft + (index / (monthlyRevenueTrend.length - 1)) * plotWidth;
       const y = 90 - (item.amount / maxRevenue) * 80;
       return `${x.toFixed(2)},${y.toFixed(2)}`;
     })
     .join(" ");
 
-  const chartAreaPoints = `0,90 ${chartPolylinePoints} 100,90`;
+  const chartAreaPoints = `${plotLeft},90 ${chartPolylinePoints} ${plotRight},90`;
+  // 請求化率（見込み→請求転換）: 今月請求予定額 ÷ 今月見込み額
+  const expectedBillingThisMonth = 9_400_000; // ダッシュボード表示用の想定請求額（モック）
+  const conversionRate = Math.max(
+    0,
+    Math.min(100, Math.round((expectedBillingThisMonth / latestRevenue.amount) * 100))
+  );
+
+  
 
   const divisionMaxRevenue = Math.max(
     ...divisionRevenueTrend.flatMap((item) => [item.management, item.techFlag, item.dc])
@@ -236,7 +251,7 @@ export default function DashboardPage() {
                       <Chip
                         label={card.chipLabel}
                         color={card.chipColor}
-                        variant={card.chipColor === "default" ? "outlined" : "filled"}
+                        variant="filled"
                         component={Link}
                         href={card.chipHref}
                         clickable
@@ -258,71 +273,99 @@ export default function DashboardPage() {
                   <Typography variant="h6" display="flex" alignItems="center" gap={1} color="text.primary">
                     <TimelineIcon fontSize="small" /> 月次売上トレンド
                   </Typography>
-                  <Stack direction="row" spacing={3}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        今月見込み
-                      </Typography>
-                      <Typography variant="h6">
-                        {currencyFormatter.format(latestRevenue.amount)}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        前月比
-                      </Typography>
-                      <Typography variant="h6" color={revenueGrowthRate >= 0 ? "success.main" : "error.main"}>
-                        {revenueGrowthRate >= 0 ? "+" : ""}
-                        {revenueGrowthRate.toFixed(1)}%
-                      </Typography>
-                    </Box>
-                  </Stack>
                 </Stack>
 
-                <Box sx={{ mt: 3 }}>
-                  <Box
+                <Box sx={{ mt: 3, display: { xs: 'block', md: 'flex' }, gap: 2, alignItems: 'stretch' }}>
+                  <Box sx={{ flex: 1, px: 1 }}
+                    component={"div"}
+                  >
+                    <Box
                     component="svg"
                     viewBox="0 0 100 100"
                     role="img"
                     aria-label="月次売上推移の折れ線グラフ"
+                    preserveAspectRatio="xMinYMin meet"
                     sx={{ width: "100%", height: 240, overflow: "visible" }}
                   >
                     {[20, 40, 60, 80].map((y) => (
-                      <line key={y} x1={0} x2={100} y1={y} y2={y} stroke="rgba(0,0,0,0.08)" strokeWidth={0.4} />
+                      <line key={y} x1={0} x2={100} y1={y} y2={y} stroke={gridColor} strokeWidth={0.4} vectorEffect="non-scaling-stroke" />
                     ))}
                     <polygon points={chartAreaPoints} fill={secRgba(0.2)} />
-                    <polyline points={chartPolylinePoints} fill="none" stroke="#003366" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+                    <polyline points={chartPolylinePoints} fill="none" stroke="#003366" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                     {monthlyRevenueTrend.map((item, index) => {
-                      const x = (index / (monthlyRevenueTrend.length - 1)) * 100;
+                      const x = plotLeft + (index / (monthlyRevenueTrend.length - 1)) * plotWidth;
                       const y = 90 - (item.amount / maxRevenue) * 80;
                       return <circle key={item.month} cx={x} cy={y} r={1.4} fill="#003366" />;
                     })}
                     {monthlyRevenueTrend.map((item, index) => {
-                      const x = (index / (monthlyRevenueTrend.length - 1)) * 100;
+                      const x = plotLeft + (index / (monthlyRevenueTrend.length - 1)) * plotWidth;
                       return (
-                        <text key={`${item.month}-label`} x={x} y={96} textAnchor="middle" fontSize={5} fill="rgba(0,0,0,0.54)">
+                        <text key={`${item.month}-label`} className={`x-tick ${index % 2 ? 'odd' : 'even'}`} x={x} y={96} textAnchor="middle" fontSize={5} fill={labelColor}>
                           {item.month}
                         </text>
                       );
                     })}
+                    </Box>
                   </Box>
+                  <Stack
+                    spacing={{ xs: 1.5, md: 0 }}
+                    sx={{
+                      minWidth: { xs: '100%', md: 240 },
+                      width: { md: 240 },
+                      mt: { xs: 2, md: 0 },
+                      height: { md: 240 },
+                      justifyContent: { md: 'space-between' },
+                    }}
+                  >
+                    {/* 今月見込み・前月比（横並び） */}
+                    <Stack direction="row" spacing={3} alignItems="flex-start">
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">今月見込み</Typography>
+                        <Typography variant="h6">{currencyFormatter.format(latestRevenue.amount)}</Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">前月比</Typography>
+                        <Typography variant="h6" color={revenueGrowthRate >= 0 ? "success.main" : "error.main"}>
+                          {revenueGrowthRate >= 0 ? "+" : ""}
+                          {revenueGrowthRate.toFixed(1)}%
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    {/* 売上目標達成率 */}
+                    <Stack spacing={0.75}>
+                      <Stack direction="row" spacing={1} alignItems="baseline">
+                        <Typography variant="caption" color="text.secondary">売上目標達成率</Typography>
+                        <Typography variant="h6">92%</Typography>
+                      </Stack>
+                      <LinearProgress variant="determinate" value={92} sx={{ height: 8, borderRadius: 4 }} />
+                    </Stack>
+                    {/* 請求化率 */}
+                    <Stack spacing={0.75}>
+                      <Stack direction="row" spacing={1} alignItems="baseline">
+                        <Typography variant="caption" color="text.secondary">請求化率（見込み→請求転換）</Typography>
+                        <Typography variant="h6">{conversionRate}%</Typography>
+                      </Stack>
+                      <LinearProgress color="secondary" variant="determinate" value={conversionRate} sx={{ height: 8, borderRadius: 4 }} />
+                    </Stack>
+                  </Stack>
                 </Box>
 
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={3} sx={{ mt: 3 }}>
-                  <Stack spacing={0.5}>
-                    <Typography variant="caption" color="text.secondary">
-                      売上目標達成率
-                    </Typography>
-                    <Typography variant="h6">92%</Typography>
-                    <LinearProgress variant="determinate" value={92} sx={{ height: 8, borderRadius: 4, width: { xs: "100%", sm: 220 } }} />
-                  </Stack>
-                  <Stack spacing={0.5}>
-                    <Typography variant="caption" color="text.secondary">
-                      パイプライン充足率 (来月)
-                    </Typography>
-                    <Typography variant="h6">84%</Typography>
-                    <LinearProgress color="secondary" variant="determinate" value={84} sx={{ height: 8, borderRadius: 4, width: { xs: "100%", sm: 220 } }} />
-                  </Stack>
+                {/* 上位貢献/下振れサマリのみ */}
+                <Divider sx={{ my: 2 }} />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">上位貢献</Typography>
+                    <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                      <Typography variant="body2">LULL戦略支援PJ +320,000</Typography>
+                      <Typography variant="body2">業務刷新プロジェクト +210,000</Typography>
+                    </Stack>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">下振れ</Typography>
+                    <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+                      <Typography variant="body2">BPO運用最適化 -120,000</Typography>
+                    </Stack>
+                  </Box>
                 </Stack>
               </CardContent>
             </Card>
@@ -405,8 +448,8 @@ export default function DashboardPage() {
                   sx={{ width: "100%", height: { xs: 280, md: 300 }, overflow: "visible" }}
                 >
                   {/* Axes */}
-                  <line x1={8} x2={8} y1={10} y2={90} stroke="rgba(0,0,0,0.38)" strokeWidth={0.5} />
-                  <line x1={8} x2={104} y1={90} y2={90} stroke="rgba(0,0,0,0.38)" strokeWidth={0.5} />
+                  <line x1={8} x2={8} y1={10} y2={90} stroke={axisColor} strokeWidth={0.5} />
+                  <line x1={8} x2={104} y1={90} y2={90} stroke={axisColor} strokeWidth={0.5} />
 
                   {/* Horizontal grid lines and Y ticks with labels */}
                   {[20, 40, 60, 80].map((y) => {
@@ -414,8 +457,8 @@ export default function DashboardPage() {
                     const value = divisionMaxRevenue * ratio;
                     return (
                       <g key={`grid-${y}`}>
-                        <line x1={8} x2={104} y1={y} y2={y} stroke="rgba(0,0,0,0.08)" strokeWidth={0.4} />
-                        <text x={6} y={y + 2} textAnchor="end" fontSize={4.2} fill="rgba(0,0,0,0.54)">
+                        <line x1={8} x2={104} y1={y} y2={y} stroke={gridColor} strokeWidth={0.4} />
+                        <text x={6} y={y + 2} textAnchor="end" fontSize={4.2} fill={labelColor}>
                           {currencyFormatter.format(Math.round(value / 10000) * 10000)}
                         </text>
                       </g>
@@ -480,10 +523,10 @@ export default function DashboardPage() {
                   )}
 
                   {/* X labels */}
-                {divisionRevenueTrend.map((item, index) => {
+                  {divisionRevenueTrend.map((item, index) => {
                     const x = 8 + (index / (divisionRevenueTrend.length - 1)) * (104 - 8);
                     return (
-                      <text key={`${item.month}-division-label`} x={x} y={96} textAnchor="middle" fontSize={5} fill="rgba(0,0,0,0.54)">
+                      <text key={`${item.month}-division-label`} x={x} y={96} textAnchor="middle" fontSize={5} fill={labelColor}>
                         {item.month}
                       </text>
                     );

@@ -48,7 +48,7 @@ const uploadHistory: UploadHistoryItem[] = [
     uploadedAt: "2024-09-30 17:05",
     uploader: "佐藤 花子",
     status: "processing",
-    message: "OCR解析中 (残り30秒)",
+    message: "内容チェック中 (残り30秒)",
   },
   {
     id: "UP-2409-009",

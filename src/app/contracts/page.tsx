@@ -13,10 +13,18 @@ import {
   Grid,
   Stack,
   Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { alpha, type Theme } from "@mui/material/styles";
 
 interface ContractRecord {
   id: string;
@@ -166,6 +174,78 @@ function ContractsContent() {
   return (
       <Stack spacing={4}>
         <Box></Box>
+
+        {/* 契約書アップロード + 契約情報入力 */}
+        <Card variant="outlined">
+          <CardContent>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="stretch">
+              {/* アップロードエリア */}
+              <Box
+                sx={{
+                  flex: 1,
+                  border: "1px dashed",
+                  borderColor: "secondary.main",
+                  borderRadius: 2,
+                  p: 4,
+                  textAlign: "center",
+                  backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.04),
+                }}
+              >
+                <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
+                <Typography variant="h6" gutterBottom>
+                  契約書をドラッグ＆ドロップ
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  PDF / Excel / CSV などの契約関連書類をアップロードしてください。
+                </Typography>
+                <Button variant="contained" color="secondary" startIcon={<UploadFileIcon />} sx={{ mt: 3 }} component="label">
+                  ファイルを選択
+                  <input hidden accept=".pdf,.xlsx,.xls,.csv" multiple type="file" />
+                </Button>
+              </Box>
+
+              {/* 契約情報入力フォーム */}
+              <Box sx={{ flex: 1, minWidth: 300 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                  収益算出に必要な契約情報を入力してください
+                </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <InputLabel id="contract-type-select">契約種別</InputLabel>
+                    <Select labelId="contract-type-select" label="契約種別" defaultValue="準委任">
+                      <MenuItem value="準委任">準委任</MenuItem>
+                      <MenuItem value="常駐">常駐</MenuItem>
+                      <MenuItem value="受託">受託</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <InputLabel id="billing-cycle-select">課金サイクル</InputLabel>
+                    <Select labelId="billing-cycle-select" label="課金サイクル" defaultValue="月次">
+                      <MenuItem value="月次">月次</MenuItem>
+                      <MenuItem value="成果">成果</MenuItem>
+                      <MenuItem value="一括">一括</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+                  <TextField label="月額 (税抜)" type="number" size="small" sx={{ minWidth: 200 }} inputProps={{ min: 0, step: 1000 }} />
+                  <FormControl size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel id="payment-terms-select">支払条件</InputLabel>
+                    <Select labelId="payment-terms-select" label="支払条件" defaultValue="末締翌月末">
+                      <MenuItem value="末締翌月末">末締翌月末</MenuItem>
+                      <MenuItem value="末締翌々月末">末締翌々月末</MenuItem>
+                      <MenuItem value="検収後30日">検収後30日</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+                  <TextField label="契約開始日" type="date" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
+                  <TextField label="契約終了日" type="date" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
+                </Stack>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
 
         <Grid container spacing={3}>
           {summaryCards.map((card) => (

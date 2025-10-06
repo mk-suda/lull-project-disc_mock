@@ -15,11 +15,19 @@ import {
   Grid,
   Stack,
   Typography,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import SendIcon from "@mui/icons-material/Send";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { alpha, type Theme } from "@mui/material/styles";
 
 interface BillingRecord {
   id: string;
@@ -184,6 +192,72 @@ function BillingContent() {
   return (
       <Stack spacing={4}>
         <Box></Box>
+
+        {/* 請求書アップロード + 請求情報入力 */}
+        <Card variant="outlined">
+          <CardContent>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="stretch">
+              {/* アップロードエリア */}
+              <Box
+                sx={{
+                  flex: 1,
+                  border: "1px dashed",
+                  borderColor: "secondary.main",
+                  borderRadius: 2,
+                  p: 4,
+                  textAlign: "center",
+                  backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.04),
+                }}
+              >
+                <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
+                <Typography variant="h6" gutterBottom>
+                  請求書をドラッグ＆ドロップ
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  PDF / Excel / CSV などの請求関連書類をアップロードしてください。
+                </Typography>
+                <Button variant="contained" color="secondary" startIcon={<UploadFileIcon />} sx={{ mt: 3 }} component="label">
+                  ファイルを選択
+                  <input hidden accept=".pdf,.xlsx,.xls,.csv" multiple type="file" />
+                </Button>
+              </Box>
+
+              {/* 請求情報入力フォーム */}
+              <Box sx={{ flex: 1, minWidth: 300 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                  収益算出に必要な請求情報を入力してください
+                </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <TextField label="請求期間" type="month" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
+                  <TextField label="請求金額 (円)" type="number" size="small" sx={{ minWidth: 200 }} inputProps={{ min: 0, step: 1000 }} />
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+                  <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <InputLabel id="approval-status-select">承認ステータス</InputLabel>
+                    <Select labelId="approval-status-select" label="承認ステータス" defaultValue="draft">
+                      <MenuItem value="draft">ドラフト</MenuItem>
+                      <MenuItem value="pending">承認待ち</MenuItem>
+                      <MenuItem value="issued">発行済み</MenuItem>
+                      <MenuItem value="sent">送付済み</MenuItem>
+                      <MenuItem value="paid">入金済み</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl size="small" sx={{ minWidth: 180 }}>
+                    <InputLabel id="payment-status-select">入金ステータス</InputLabel>
+                    <Select labelId="payment-status-select" label="入金ステータス" defaultValue="unpaid">
+                      <MenuItem value="unpaid">未入金</MenuItem>
+                      <MenuItem value="paid">入金済み</MenuItem>
+                      <MenuItem value="overdue">入金遅延</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+                  <TextField label="支払予定日" type="date" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
+                </Stack>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
 
         <Grid container spacing={3}>
           {summary.map((item) => (
