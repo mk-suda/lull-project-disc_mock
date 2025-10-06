@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ManagementLayout from "../../components/layout/ManagementLayout";
@@ -173,7 +174,7 @@ const summary = [
   },
 ];
 
-export default function BillingPage() {
+function BillingContent() {
   const searchParams = useSearchParams();
   const approvalParam = searchParams.get("approval");
   const approvals = approvalParam
@@ -181,7 +182,6 @@ export default function BillingPage() {
     : undefined;
   const rows = approvals && approvals.length > 0 ? billingRows.filter((r) => approvals.includes(r.approvalStatus)) : billingRows;
   return (
-    <ManagementLayout title="請求管理">
       <Stack spacing={4}>
         <Box></Box>
 
@@ -251,6 +251,15 @@ export default function BillingPage() {
           </CardContent>
         </Card>
       </Stack>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <ManagementLayout title="請求管理">
+      <Suspense fallback={<Typography variant="body2">loading...</Typography>}>
+        <BillingContent />
+      </Suspense>
     </ManagementLayout>
   );
 }
