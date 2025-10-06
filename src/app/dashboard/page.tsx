@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from "react";
+import Link from "next/link";
 import ManagementLayout from "../../components/layout/ManagementLayout";
 import {
   Avatar,
@@ -9,6 +10,7 @@ import {
   CardContent,
   Chip,
   Divider,
+  Button,
   Grid,
   LinearProgress,
   List,
@@ -17,8 +19,11 @@ import {
   ListItemText,
   Stack,
   Typography,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import { useTheme } from "@mui/material/styles";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
@@ -43,6 +48,7 @@ const kpiCards = [
     chipLabel: "安定稼働",
     chipColor: "success" as const,
     icon: TrendingUpIcon,
+    chipHref: "/contracts?status=active,expiring,draft&planned=future",
   },
   {
     label: "契約更新期限",
@@ -51,6 +57,7 @@ const kpiCards = [
     chipLabel: "要確認",
     chipColor: "warning" as const,
     icon: ChecklistIcon,
+    chipHref: "/contracts?status=expiring",
   },
   {
     label: "勤怠未承認",
@@ -59,6 +66,7 @@ const kpiCards = [
     chipLabel: "差戻し 2件",
     chipColor: "default" as const,
     icon: AccessTimeFilledIcon,
+    chipHref: "/attendance?approval=pending,rejected",
   },
   {
     label: "請求書発行予定",
@@ -67,6 +75,7 @@ const kpiCards = [
     chipLabel: "総額 960万円",
     chipColor: "secondary" as const,
     icon: TrendingUpIcon,
+    chipHref: "/billing?approval=draft,pending",
   },
 ];
 
@@ -103,7 +112,14 @@ const pipelineOverview = [
   { stage: "契約締結", ratio: 28, helper: "平均リードタイム 12日" },
 ];
 
-const approvalsQueue = [
+type ApprovalItem = {
+  project: string;
+  member: string;
+  deadline: string;
+  status: string;
+};
+
+const approvalsQueue: ApprovalItem[] = [
   {
     project: "LULLデジタル戦略PJ",
     member: "山田 太郎",
@@ -129,19 +145,22 @@ const riskAlerts = [
     title: "契約更新期限が迫っています",
     detail: "PJ-4633 (クライアントA) の契約が7日後に終了します。先方責任者との調整を進めてください。",
     severity: "high" as const,
+    href: "/contracts?status=expiring",
+    linkLabel: "契約一覧へ",
   },
   {
     title: "勤怠乖離が検知されました",
     detail: "EMP-1112 の請求見込み額が契約単価から大きく乖離しています。マスタ情報の再確認が必要です。",
     severity: "medium" as const,
+    href: "/attendance?approval=pending,rejected",
+    linkLabel: "勤怠一覧へ",
   },
 ];
 
 const progressByDepartment = [
-  { department: "コンサルティング部", completion: 76 },
-  { department: "BPO推進課", completion: 64 },
-  { department: "開発ソリューション部", completion: 82 },
-  { department: "人事シェアード", completion: 58 },
+  { department: "管理事業部", completion: 76 },
+  { department: "テックフラッグ事業部", completion: 82 },
+  { department: "DC事業部", completion: 64 },
 ];
 
 const milestoneProgress = [
@@ -157,6 +176,12 @@ const currencyFormatter = new Intl.NumberFormat("ja-JP", {
 });
 
 export default function DashboardPage() {
+  const theme = useTheme();
+  const sec = theme.palette.secondary.main;
+  const secR = parseInt(sec.slice(1, 3), 16);
+  const secG = parseInt(sec.slice(3, 5), 16);
+  const secB = parseInt(sec.slice(5, 7), 16);
+  const secRgba = (a: number) => `rgba(${secR}, ${secG}, ${secB}, ${a})`;
   const maxRevenue = Math.max(...monthlyRevenueTrend.map((item) => item.amount));
   const latestRevenue = monthlyRevenueTrend[monthlyRevenueTrend.length - 1];
   const previousRevenue = monthlyRevenueTrend[monthlyRevenueTrend.length - 2];
@@ -198,17 +223,12 @@ export default function DashboardPage() {
     { label: "下期計画 (10-3月)", actual: secondHalfForecastTotal, target: 60_000_000, type: "forecast" as const },
   ];
 
+  const [divisionChartMode, setDivisionChartMode] = React.useState<"line" | "bar">("line");
+
   return (
     <ManagementLayout title="ダッシュボード">
       <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            ダッシュボード
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            LULLの営業・勤怠・請求状況を俯瞰し、リスクを早期に把握するためのハブ画面です。
-          </Typography>
-        </Box>
+        <Box></Box>
 
         <Grid container spacing={3}>
           {kpiCards.map((card) => {
@@ -232,7 +252,15 @@ export default function DashboardPage() {
                       <Typography variant="body2" color="text.secondary">
                         {card.helper}
                       </Typography>
-                      <Chip label={card.chipLabel} color={card.chipColor} variant={card.chipColor === "default" ? "outlined" : "filled"} />
+                      <Chip
+                        label={card.chipLabel}
+                        color={card.chipColor}
+                        variant={card.chipColor === "default" ? "outlined" : "filled"}
+                        component={Link}
+                        href={card.chipHref}
+                        clickable
+                        aria-label={`${card.label}の詳細へ`}
+                      />
                     </Stack>
                   </CardContent>
                 </Card>
@@ -246,7 +274,7 @@ export default function DashboardPage() {
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
                 <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} alignItems={{ xs: "flex-start", sm: "center" }}>
-                  <Typography variant="h6" display="flex" alignItems="center" gap={1}>
+                  <Typography variant="h6" display="flex" alignItems="center" gap={1} color="text.primary">
                     <TimelineIcon fontSize="small" /> 月次売上トレンド
                   </Typography>
                   <Stack direction="row" spacing={3}>
@@ -281,7 +309,7 @@ export default function DashboardPage() {
                     {[20, 40, 60, 80].map((y) => (
                       <line key={y} x1={0} x2={100} y1={y} y2={y} stroke="rgba(0,0,0,0.08)" strokeWidth={0.4} />
                     ))}
-                    <polygon points={chartAreaPoints} fill="rgba(0, 169, 224, 0.2)" />
+                    <polygon points={chartAreaPoints} fill={secRgba(0.2)} />
                     <polyline points={chartPolylinePoints} fill="none" stroke="#003366" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
                     {monthlyRevenueTrend.map((item, index) => {
                       const x = (index / (monthlyRevenueTrend.length - 1)) * 100;
@@ -321,26 +349,45 @@ export default function DashboardPage() {
           <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom>
-                  <InsightsIcon fontSize="small" /> 進捗状況サマリー
+                <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom color="text.primary">
+                  <ReportProblemIcon fontSize="small" /> リスクアラート
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  売上創出に向けた営業ステージごとの進捗を可視化しています。
-                </Typography>
+                <Divider sx={{ mb: 2 }} />
                 <Stack spacing={2}>
-                  {pipelineOverview.map((stage) => (
-                    <Box key={stage.stage}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="subtitle2">{stage.stage}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {stage.ratio}%
-                        </Typography>
+                  {riskAlerts.map((alert) => (
+                    <Stack
+                      key={alert.title}
+                      spacing={1}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        backgroundColor:
+                          alert.severity === "high"
+                            ? "rgba(255, 112, 67, 0.12)"
+                            : "rgba(255, 193, 7, 0.12)",
+                      }}
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <ReportProblemIcon fontSize="small" color={alert.severity === "high" ? "error" : "warning"} />
+                        <Typography variant="subtitle1">{alert.title}</Typography>
                       </Stack>
-                      <LinearProgress variant="determinate" value={stage.ratio} sx={{ mt: 1, height: 8, borderRadius: 4 }} />
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-                        {stage.helper}
+                      <Typography variant="body2" color="text.secondary">
+                        {alert.detail}
                       </Typography>
-                    </Box>
+                      {alert.href && (
+                        <Box sx={{ pt: 1 }}>
+                          <Button
+                            component={Link}
+                            href={alert.href}
+                            size="small"
+                            variant="outlined"
+                            color={alert.severity === "high" ? "error" : "warning"}
+                          >
+                            {alert.linkLabel ?? "詳細へ"}
+                          </Button>
+                        </Box>
+                      )}
+                    </Stack>
                   ))}
                 </Stack>
               </CardContent>
@@ -352,41 +399,108 @@ export default function DashboardPage() {
           <Grid size={{ xs: 12, md: 8 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom>
-                  <TimelineIcon fontSize="small" /> 事業部別収益トレンド
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  管理事業部・テックフラッグ事業部・DC事業部の月次収益を比較し、収益源の偏りや伸びを把握します。
-                </Typography>
+                <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} spacing={2}>
+                  <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom color="text.primary">
+                    <TimelineIcon fontSize="small" /> 事業部別収益トレンド
+                  </Typography>
+                  <ToggleButtonGroup
+                    size="small"
+                    exclusive
+                    color="primary"
+                    value={divisionChartMode}
+                    onChange={(_, val) => val && setDivisionChartMode(val)}
+                    aria-label="トレンド表示切替"
+                  >
+                    <ToggleButton value="line" aria-label="線グラフ">線</ToggleButton>
+                    <ToggleButton value="bar" aria-label="棒グラフ">棒</ToggleButton>
+                  </ToggleButtonGroup>
+                </Stack>
+                {/* description removed as requested */}
                 <Box
                   component="svg"
-                  viewBox="0 0 100 100"
+                  viewBox="0 0 110 100"
                   role="img"
                   aria-label="事業部別の収益推移グラフ"
-                  sx={{ width: "100%", height: { xs: 260, md: 280 }, overflow: "visible" }}
+                  sx={{ width: "100%", height: { xs: 280, md: 300 }, overflow: "visible" }}
                 >
-                  {[20, 40, 60, 80].map((y) => (
-                    <line key={y} x1={0} x2={100} y1={y} y2={y} stroke="rgba(0,0,0,0.08)" strokeWidth={0.4} />
-                  ))}
-                  {divisionConfig.map((division) => (
-                    <React.Fragment key={division.key}>
-                      <polyline
-                        points={divisionPolylinePoints[division.key]}
-                        fill="none"
-                        stroke={division.color}
-                        strokeWidth={1.6}
-                        strokeLinejoin="round"
-                        strokeLinecap="round"
-                      />
+                  {/* Axes */}
+                  <line x1={8} x2={8} y1={10} y2={90} stroke="rgba(0,0,0,0.38)" strokeWidth={0.5} />
+                  <line x1={8} x2={104} y1={90} y2={90} stroke="rgba(0,0,0,0.38)" strokeWidth={0.5} />
+
+                  {/* Horizontal grid lines and Y ticks with labels */}
+                  {[20, 40, 60, 80].map((y) => {
+                    const ratio = (90 - y) / 80; // 0..1
+                    const value = divisionMaxRevenue * ratio;
+                    return (
+                      <g key={`grid-${y}`}>
+                        <line x1={8} x2={104} y1={y} y2={y} stroke="rgba(0,0,0,0.08)" strokeWidth={0.4} />
+                        <text x={6} y={y + 2} textAnchor="end" fontSize={4.2} fill="rgba(0,0,0,0.54)">
+                          {currencyFormatter.format(Math.round(value / 10000) * 10000)}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {divisionChartMode === "line" ? (
+                    <g>
+                      {divisionConfig.map((division) => (
+                        <React.Fragment key={division.key}>
+                          <polyline
+                            points={divisionRevenueTrend
+                              .map((item, index) => {
+                                const x = 8 + (index / (divisionRevenueTrend.length - 1)) * (104 - 8);
+                                const y = 90 - (item[division.key] / divisionMaxRevenue) * 80;
+                                return `${x.toFixed(2)},${y.toFixed(2)}`;
+                              })
+                              .join(" ")}
+                            fill="none"
+                            stroke={division.color}
+                            strokeWidth={1.6}
+                            strokeLinejoin="round"
+                            strokeLinecap="round"
+                          />
+                          {divisionRevenueTrend.map((item, index) => {
+                            const x = 8 + (index / (divisionRevenueTrend.length - 1)) * (104 - 8);
+                            const y = 90 - (item[division.key] / divisionMaxRevenue) * 80;
+                            return <circle key={`${division.key}-${item.month}`} cx={x} cy={y} r={1.4} fill={division.color} />;
+                          })}
+                        </React.Fragment>
+                      ))}
+                    </g>
+                  ) : (
+                    <g>
                       {divisionRevenueTrend.map((item, index) => {
-                        const x = (index / (divisionRevenueTrend.length - 1)) * 100;
-                        const y = 90 - (item[division.key] / divisionMaxRevenue) * 80;
-                        return <circle key={`${division.key}-${item.month}`} cx={x} cy={y} r={1.4} fill={division.color} />;
+                        const groupWidth = (104 - 8) / divisionRevenueTrend.length;
+                        const startX = 8 + index * groupWidth + groupWidth * 0.15;
+                        const barW = groupWidth * 0.18;
+                        return (
+                          <g key={`bar-group-${index}`}>
+                            {divisionConfig.map((division, di) => {
+                              const v = item[division.key];
+                              const h = (v / divisionMaxRevenue) * 80;
+                              const x = startX + di * (barW + groupWidth * 0.05);
+                              const y = 90 - h;
+                              return (
+                                <rect
+                                  key={`${division.key}-bar-${index}`}
+                                  x={x}
+                                  y={y}
+                                  width={barW}
+                                  height={h}
+                                  fill={division.color}
+                                  rx={0.8}
+                                />
+                              );
+                            })}
+                          </g>
+                        );
                       })}
-                    </React.Fragment>
-                  ))}
-                  {divisionRevenueTrend.map((item, index) => {
-                    const x = (index / (divisionRevenueTrend.length - 1)) * 100;
+                    </g>
+                  )}
+
+                  {/* X labels */}
+                {divisionRevenueTrend.map((item, index) => {
+                    const x = 8 + (index / (divisionRevenueTrend.length - 1)) * (104 - 8);
                     return (
                       <text key={`${item.month}-division-label`} x={x} y={96} textAnchor="middle" fontSize={5} fill="rgba(0,0,0,0.54)">
                         {item.month}
@@ -410,12 +524,10 @@ export default function DashboardPage() {
           <Grid size={{ xs: 12, md: 4 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom>
+                <Typography variant="h6" display="flex" alignItems="center" gap={1} gutterBottom color="text.primary">
                   <BarChartIcon fontSize="small" /> 半期収益サマリー
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  3事業部の数値を統合し、半期単位での収益達成状況とギャップを確認できます。
-                </Typography>
+                
                 <Stack spacing={3}>
                   {halfYearPerformance.map((period) => {
                     const progress = Math.min(100, (period.actual / period.target) * 100);
@@ -459,13 +571,13 @@ export default function DashboardPage() {
           <Grid size={{ xs: 12, md: 8 }}>
             <Card variant="outlined" sx={{ height: "100%" }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom color="text.primary">
                   対応が必要な承認ワークフロー
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <List disablePadding>
                   {approvalsQueue.map((item, index) => (
-                    <React.Fragment key={item.member}>
+                    <React.Fragment key={`${item.project}-${item.member}`}>
                       <ListItem alignItems="flex-start" sx={{ py: 2 }}>
                         <ListItemAvatar>
                           <Avatar sx={{ bgcolor: "secondary.main" }}>
@@ -500,7 +612,7 @@ export default function DashboardPage() {
             <Stack spacing={3}>
               <Card variant="outlined">
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom color="text.primary">
                     部門別 進捗プロファイル
                   </Typography>
                   <Stack spacing={2}>
@@ -526,7 +638,7 @@ export default function DashboardPage() {
 
               <Card variant="outlined">
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom color="text.primary">
                     主要案件の進捗
                   </Typography>
                   <Stack spacing={2}>
@@ -546,38 +658,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    リスクアラート
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Stack spacing={2}>
-                    {riskAlerts.map((alert) => (
-                      <Stack
-                        key={alert.title}
-                        spacing={1}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          backgroundColor:
-                            alert.severity === "high"
-                              ? "rgba(255, 112, 67, 0.12)"
-                              : "rgba(255, 193, 7, 0.12)",
-                        }}
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <ReportProblemIcon fontSize="small" color={alert.severity === "high" ? "error" : "warning"} />
-                          <Typography variant="subtitle1">{alert.title}</Typography>
-                        </Stack>
-                        <Typography variant="body2" color="text.secondary">
-                          {alert.detail}
-                        </Typography>
-                      </Stack>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
+              
             </Stack>
           </Grid>
         </Grid>

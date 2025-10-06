@@ -124,7 +124,7 @@ export default function ManagementLayout({
         >
           <Toolbar sx={{ px: 3 }}>
             <Typography variant="h6" component="div" noWrap>
-              LULL OPS
+              LULL.inc
             </Typography>
           </Toolbar>
           <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.18)" }} />

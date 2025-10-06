@@ -62,6 +62,10 @@ export default function AppThemeProvider({ children }: PropsWithChildren) {
               backgroundColor: theme.palette.background.default,
               color: theme.palette.text.primary,
             },
+            // Scope heading color to main content so AppBar/Drawer titles keep contrastText (white)
+            "main .MuiTypography-h1, main .MuiTypography-h2, main .MuiTypography-h3, main .MuiTypography-h4, main .MuiTypography-h5, main .MuiTypography-h6": {
+              color: theme.palette.text.primary,
+            },
           }}
         />
         {children}

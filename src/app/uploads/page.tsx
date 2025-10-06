@@ -70,14 +70,7 @@ export default function UploadsPage() {
   return (
     <ManagementLayout title="帳票アップロード">
       <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            帳票アップロード
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            勤怠報告書や請求書テンプレートをアップロードし、OCR解析から各モジュールへの連携までを自動で実行します。
-          </Typography>
-        </Box>
+        <Box></Box>
 
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 6 }}>
@@ -86,7 +79,7 @@ export default function UploadsPage() {
                 <Stack spacing={3} alignItems="center" textAlign="center">
                   <CloudUploadIcon sx={{ fontSize: 56, color: "secondary.main" }} />
                   <Box>
-                    <Typography variant="h6">PDF / Excel をドラッグ＆ドロップ</Typography>
+                    <Typography variant="h6" color="text.primary">PDF / Excel をドラッグ＆ドロップ</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                       対応形式: PDF, XLSX, CSV (最大20MB)。アップロード後、自動的に勤務実績・請求データへ反映されます。
                     </Typography>
@@ -120,7 +113,7 @@ export default function UploadsPage() {
 
               <Card variant="outlined">
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom color="text.primary">
                     アップロード履歴
                   </Typography>
                   <List disablePadding>

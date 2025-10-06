@@ -111,14 +111,7 @@ export default function MasterPage() {
   return (
     <ManagementLayout title="マスタ管理">
       <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            マスタ管理
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            社員・案件・単価などの基礎データをメンテナンスし、請求や勤怠の整合性を保ちます。
-          </Typography>
-        </Box>
+        <Box></Box>
 
         <Card variant="outlined">
           <Tabs
@@ -138,7 +131,7 @@ export default function MasterPage() {
               {currentTab === index && (
                 <Stack spacing={4}>
                   <Box>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom color="text.primary">
                       {category.label}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">

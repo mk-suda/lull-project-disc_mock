@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import ManagementLayout from "../../components/layout/ManagementLayout";
 import {
   Alert,
@@ -173,17 +174,16 @@ const summary = [
 ];
 
 export default function BillingPage() {
+  const searchParams = useSearchParams();
+  const approvalParam = searchParams.get("approval");
+  const approvals = approvalParam
+    ? (approvalParam.split(",").filter(Boolean) as BillingRecord["approvalStatus"][])
+    : undefined;
+  const rows = approvals && approvals.length > 0 ? billingRows.filter((r) => approvals.includes(r.approvalStatus)) : billingRows;
   return (
     <ManagementLayout title="請求管理">
       <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            請求・入金管理
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            勤怠承認の状況と連動した請求額を確認し、承認〜送付〜入金確認までをワンストップで管理します。
-          </Typography>
-        </Box>
+        <Box></Box>
 
         <Grid container spacing={3}>
           {summary.map((item) => (
@@ -220,7 +220,7 @@ export default function BillingPage() {
           <CardContent>
             <Stack direction={{ xs: "column", md: "row" }} alignItems={{ xs: "stretch", md: "center" }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6">請求案件一覧</Typography>
+                <Typography variant="h6" color="text.primary">請求案件一覧</Typography>
                 <Typography variant="body2" color="text.secondary">
                   承認・送付状況を確認し、CSVやPDFとして出力できます。
                 </Typography>
@@ -237,15 +237,15 @@ export default function BillingPage() {
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ height: 480 }}>
               <DataGrid<BillingRecord>
-                rows={billingRows}
+                rows={rows}
                 columns={columns}
                 disableRowSelectionOnClick
                 pageSizeOptions={[5, 10]}
                 initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-                sx={{
+                sx={(theme) => ({
                   "& .MuiDataGrid-columnHeaders": { fontWeight: 600 },
-                  "& .MuiDataGrid-row.Mui-hovered": { backgroundColor: "rgba(0, 169, 224, 0.06)" },
-                }}
+                  "& .MuiDataGrid-row.Mui-hovered": { backgroundColor: `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.06)` },
+                })}
               />
             </Box>
           </CardContent>
