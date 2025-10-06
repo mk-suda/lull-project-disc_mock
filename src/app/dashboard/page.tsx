@@ -27,7 +27,6 @@ import { useTheme } from "@mui/material/styles";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
-import InsightsIcon from "@mui/icons-material/Insights";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import BarChartIcon from "@mui/icons-material/BarChart";
 
@@ -103,13 +102,6 @@ const divisionConfig: { key: DivisionKey; label: string; color: string }[] = [
   { key: "management", label: "管理事業部", color: "#003366" },
   { key: "techFlag", label: "テックフラッグ事業部", color: "#00A9E0" },
   { key: "dc", label: "DC事業部", color: "#FF7043" },
-];
-
-const pipelineOverview = [
-  { stage: "商談中", ratio: 68, helper: "成約確度 35%" },
-  { stage: "見積提示", ratio: 54, helper: "平均単価 6,100円" },
-  { stage: "契約ドラフト", ratio: 41, helper: "法務レビュー中 3件" },
-  { stage: "契約締結", ratio: 28, helper: "平均リードタイム 12日" },
 ];
 
 type ApprovalItem = {
@@ -200,17 +192,6 @@ export default function DashboardPage() {
   const divisionMaxRevenue = Math.max(
     ...divisionRevenueTrend.flatMap((item) => [item.management, item.techFlag, item.dc])
   );
-
-  const divisionPolylinePoints = divisionConfig.reduce<Record<DivisionKey, string>>((acc, division) => {
-    acc[division.key] = divisionRevenueTrend
-      .map((item, index) => {
-        const x = (index / (divisionRevenueTrend.length - 1)) * 100;
-        const y = 90 - (item[division.key] / divisionMaxRevenue) * 80;
-        return `${x.toFixed(2)},${y.toFixed(2)}`;
-      })
-      .join(" ");
-    return acc;
-  }, { management: "", techFlag: "", dc: "" });
 
   const firstHalfTotal = divisionRevenueTrend
     .slice(0, 6)

@@ -17,6 +17,8 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import type { Theme } from "@mui/material/styles";
 import {
   DataGrid,
   GridColDef,
@@ -212,7 +214,7 @@ const gridSx = {
     transition: "background-color 0.2s ease",
   },
   "& .MuiDataGrid-row.Mui-hovered": {
-    backgroundColor: (theme: any) => `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.06)`,
+    backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.06),
   },
 };
 
@@ -239,7 +241,7 @@ export default function AttendancePage() {
                   borderRadius: 2,
                   p: 4,
                   textAlign: "center",
-                  backgroundColor: (theme: any) => `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.04)`,
+                  backgroundColor: (theme: Theme) => alpha(theme.palette.secondary.main, 0.04),
                 }}
               >
                 <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
