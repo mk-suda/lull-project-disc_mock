@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import ManagementLayout from "../../components/layout/ManagementLayout";
 import {
   Box,
@@ -143,17 +144,28 @@ const summaryCards = [
 ];
 
 export default function ContractsPage() {
+  const searchParams = useSearchParams();
+  const statusParam = searchParams.get("status");
+  const plannedParam = searchParams.get("planned");
+  const statuses = statusParam ? (statusParam.split(",").filter(Boolean) as ContractRecord["status"][]) : undefined;
+  const baseRows = statuses && statuses.length > 0 ? contractRows.filter((r) => statuses.includes(r.status)) : contractRows;
+
+  const today = new Date();
+  const parseDate = (s: string) => new Date(s);
+  const isActiveNow = (r: ContractRecord) => parseDate(r.startDate) <= today && today <= parseDate(r.endDate);
+  const isFutureStart = (r: ContractRecord) => parseDate(r.startDate) > today;
+
+  const rows = plannedParam === "future"
+    ? baseRows.filter((r) => {
+        if (r.status === "draft") return isFutureStart(r);
+        if (r.status === "active" || r.status === "expiring") return isActiveNow(r);
+        return true;
+      })
+    : baseRows;
   return (
     <ManagementLayout title="契約台帳">
       <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            契約台帳 / 管理
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            クライアント契約の最新状況と更新期限を確認し、リスクのある案件へのフォローを促します。
-          </Typography>
-        </Box>
+        <Box></Box>
 
         <Grid container spacing={3}>
           {summaryCards.map((card) => (
@@ -179,7 +191,7 @@ export default function ContractsPage() {
           <CardContent>
             <Stack direction={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6">契約一覧</Typography>
+                <Typography variant="h6" color="text.primary">契約一覧</Typography>
                 <Typography variant="body2" color="text.secondary">
                   契約状況に応じて絞り込み・エクスポートが可能です。
                 </Typography>
@@ -195,15 +207,17 @@ export default function ContractsPage() {
             </Stack>
             <Box sx={{ height: 480 }}>
               <DataGrid<ContractRecord>
-                rows={contractRows}
+                rows={rows}
                 columns={columns}
                 disableRowSelectionOnClick
                 pageSizeOptions={[5, 10]}
                 initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
-                sx={{
+                sx={(theme) => ({
                   "& .MuiDataGrid-columnHeaders": { fontWeight: 600 },
-                  "& .MuiDataGrid-row.Mui-selected": { backgroundColor: "rgba(0, 169, 224, 0.08)" },
-                }}
+                  "& .MuiDataGrid-row.Mui-selected": {
+                    backgroundColor: `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.08)`,
+                  },
+                })}
               />
             </Box>
           </CardContent>

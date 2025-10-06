@@ -2,14 +2,17 @@
 
 const baseTheme = createTheme({
   palette: {
+    // 落ち着いた深いネイビーを基調（既存踏襲）
     primary: {
       main: "#003366",
       contrastText: "#FFFFFF",
     },
+    // アクセント（初期色に戻す）
     secondary: {
       main: "#00A9E0",
       contrastText: "#FFFFFF",
     },
+    // 成功・警告・エラー（初期色に戻す）
     success: {
       main: "#4CAF50",
     },

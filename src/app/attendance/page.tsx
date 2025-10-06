@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -35,7 +36,7 @@ const mockRecords: AttendanceRecord[] = [
     projectName: "LULL販売管理刷新プロジェクト",
     employeeId: "EMP-1021",
     employeeName: "田中 太郎",
-    department: "開発第1グループ",
+    department: "テックフラッグ事業部",
     workPeriod: "2025-09",
     totalWorkHours: 152,
     overtimeHours: 12,
@@ -62,7 +63,7 @@ const mockRecords: AttendanceRecord[] = [
     projectName: "クラウド請求高度化PJT",
     employeeId: "EMP-1088",
     employeeName: "佐藤 花子",
-    department: "業務設計グループ",
+    department: "管理事業部",
     workPeriod: "2025-09",
     totalWorkHours: 160,
     overtimeHours: 20,
@@ -82,7 +83,7 @@ const mockRecords: AttendanceRecord[] = [
     projectName: "労務DX基盤構築",
     employeeId: "EMP-1112",
     employeeName: "高橋 健",
-    department: "BPO推進室",
+    department: "DC事業部",
     workPeriod: "2025-09",
     totalWorkHours: 140,
     overtimeHours: 4,
@@ -211,22 +212,21 @@ const gridSx = {
     transition: "background-color 0.2s ease",
   },
   "& .MuiDataGrid-row.Mui-hovered": {
-    backgroundColor: "rgba(0, 169, 224, 0.06)",
+    backgroundColor: (theme: any) => `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.06)`,
   },
 };
 
 export default function AttendancePage() {
+  const searchParams = useSearchParams();
+  const approvalParam = searchParams.get("approval");
+  const approvals = approvalParam
+    ? (approvalParam.split(",").filter(Boolean) as AttendanceApprovalStatus[])
+    : undefined;
+  const rows = approvals && approvals.length > 0 ? mockRecords.filter((r) => approvals.includes(r.approvalStatus)) : mockRecords;
   return (
     <ManagementLayout title="勤務情報登録 / アップロード">
       <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom>
-            勤務情報登録 / アップロード
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            原本となる勤務管理表のアップロードと、請求計算に必要な勤務実績データの整合性確認を行います。
-          </Typography>
-        </Box>
+        <Box></Box>
 
         <Card variant="outlined">
           <CardContent>
@@ -239,7 +239,7 @@ export default function AttendancePage() {
                   borderRadius: 2,
                   p: 4,
                   textAlign: "center",
-                  backgroundColor: "rgba(0, 169, 224, 0.04)",
+                  backgroundColor: (theme: any) => `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.04)`,
                 }}
               >
                 <CloudUploadIcon sx={{ fontSize: 48, color: "secondary.main", mb: 1 }} />
@@ -274,7 +274,7 @@ export default function AttendancePage() {
 
         <Stack spacing={2}>
           <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Typography variant="h5" component="h2">
+            <Typography variant="h5" component="h2" color="text.primary">
               勤務実績データ
             </Typography>
             <Button variant="contained" color="primary">
@@ -286,7 +286,7 @@ export default function AttendancePage() {
           </Typography>
           <Box sx={{ height: 480, bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
             <DataGrid<AttendanceRecord>
-              rows={mockRecords}
+              rows={rows}
               columns={columns}
               disableRowSelectionOnClick
               checkboxSelection
