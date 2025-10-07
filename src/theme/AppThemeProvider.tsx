@@ -137,17 +137,11 @@ export default function AppThemeProvider({ children, initialScheme }: PropsWithC
                 "main .MuiTypography-h1, main .MuiTypography-h2, main .MuiTypography-h3, main .MuiTypography-h4, main .MuiTypography-h5, main .MuiTypography-h6": {
                   color: theme.palette.text.primary,
                 },
-                // Dark-only: ensure主要テキスト系を白（他テーマへは影響なし）
-                'html[data-scheme="dark"] .MuiTypography-root, html[data-scheme="dark"] h1, html[data-scheme="dark"] h2, html[data-scheme=\"dark\"] h3, html[data-scheme=\"dark\"] h4, html[data-scheme=\"dark\"] h5, html[data-scheme=\"dark\"] h6': {
+                // Dark-only: force all text to white (no impact to other themes)
+                'html[data-scheme="dark"] body, html[data-scheme="dark"] body *:not(svg):not(path):not(.MuiSvgIcon-root)': {
                   color: '#FFFFFF !important',
                 },
-                'html[data-scheme="dark"] .MuiListItemText-primary, html[data-scheme="dark"] .MuiListItemText-secondary': {
-                  color: '#FFFFFF !important',
-                },
-                'html[data-scheme="dark"] .MuiDataGrid-root, html[data-scheme="dark"] .MuiDataGrid-cell, html[data-scheme="dark"] .MuiDataGrid-columnHeaderTitle': {
-                  color: '#FFFFFF !important',
-                },
-                
+
               }
             }
           />

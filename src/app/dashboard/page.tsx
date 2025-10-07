@@ -623,6 +623,8 @@ export default function DashboardPage() {
                               </Typography>
                             </Stack>
                           }
+                          primaryTypographyProps={{ component: 'div' }}
+                          secondaryTypographyProps={{ component: 'div' }}
                         />
                       </ListItem>
                       {index < approvalsQueue.length - 1 && <Divider component="li" />}
