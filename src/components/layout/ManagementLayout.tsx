@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import { Theme } from "@mui/material/styles";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import DescriptionIcon from "@mui/icons-material/Description";
 import GroupsIcon from "@mui/icons-material/Groups";
 import MenuIcon from "@mui/icons-material/Menu";
 import PunchClockIcon from "@mui/icons-material/PunchClock";
@@ -40,7 +39,7 @@ const navigationItems = [
   { label: "勤務情報登録", icon: <PunchClockIcon fontSize="small" />, href: "/attendance" },
   { label: "請求管理", icon: <ReceiptLongIcon fontSize="small" />, href: "/billing" },
   { label: "マスタ管理", icon: <SettingsApplicationsIcon fontSize="small" />, href: "/master" },
-  { label: "原本アップロード", icon: <DescriptionIcon fontSize="small" />, href: "/uploads" },
+  // 原本アップロードはサイドバー表示から除外
 ];
 
 export interface ManagementLayoutProps {

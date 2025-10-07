@@ -23,11 +23,14 @@ import {
 } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import DescriptionIcon from "@mui/icons-material/Description";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import SendIcon from "@mui/icons-material/Send";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { alpha, type Theme } from "@mui/material/styles";
+ 
+ 
 
 interface BillingRecord {
   id: string;
@@ -39,6 +42,7 @@ interface BillingRecord {
   paymentDueDate: string;
   paymentStatus: "unpaid" | "paid" | "overdue";
   lastAction: string;
+  invoiceFileName?: string;
 }
 
 const billingRows: BillingRecord[] = [
@@ -52,6 +56,7 @@ const billingRows: BillingRecord[] = [
     paymentDueDate: "2024-10-31",
     paymentStatus: "unpaid",
     lastAction: "経理承認待ち",
+    invoiceFileName: "bl-2409-0012_invoice.pdf",
   },
   {
     id: "BL-2409-0014",
@@ -63,6 +68,7 @@ const billingRows: BillingRecord[] = [
     paymentDueDate: "2024-10-28",
     paymentStatus: "unpaid",
     lastAction: "請求書発行済み",
+    invoiceFileName: "bl-2409-0014_invoice.pdf",
   },
   {
     id: "BL-2409-0016",
@@ -74,6 +80,7 @@ const billingRows: BillingRecord[] = [
     paymentDueDate: "2024-11-05",
     paymentStatus: "unpaid",
     lastAction: "勤怠データ突合中",
+    invoiceFileName: "pj4633_invoice.xlsx",
   },
   {
     id: "BL-2408-0009",
@@ -85,6 +92,7 @@ const billingRows: BillingRecord[] = [
     paymentDueDate: "2024-09-30",
     paymentStatus: "overdue",
     lastAction: "入金遅延の連絡済み",
+    invoiceFileName: "bl-2408-0009_invoice.pdf",
   },
 ];
 
@@ -159,6 +167,27 @@ const columns: GridColDef<BillingRecord>[] = [
   },
   { field: "paymentDueDate", headerName: "支払予定日", width: 140 },
   { field: "lastAction", headerName: "最終アクション", flex: 1, minWidth: 200 },
+  {
+    field: "invoice",
+    headerName: "請求書",
+    width: 120,
+    sortable: false,
+    renderCell: (params: GridRenderCellParams<BillingRecord, string | undefined>) => {
+      const file = params.row.invoiceFileName;
+      return (
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<DescriptionIcon />}
+          component={Link}
+          href={file ? `/uploads?file=${encodeURIComponent(file)}` : "/uploads"}
+          disabled={!file}
+        >
+          表示
+        </Button>
+      );
+    },
+  },
 ];
 
 const summary = [
@@ -228,6 +257,10 @@ function BillingContent() {
                   収益算出に必要な請求情報を入力してください
                 </Typography>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <TextField label="クライアント名" size="small" sx={{ minWidth: 240 }} />
+                  <TextField label="案件名" size="small" sx={{ minWidth: 240 }} />
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
                   <TextField label="請求期間" type="month" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
                   <TextField label="請求金額 (円)" type="number" size="small" sx={{ minWidth: 200 }} inputProps={{ min: 0, step: 1000 }} />
                 </Stack>
@@ -253,6 +286,11 @@ function BillingContent() {
                 </Stack>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
                   <TextField label="支払予定日" type="date" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
+                </Stack>
+                <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
+                  <Button variant="contained" color="primary" startIcon={<AddCircleOutlineIcon />}>
+                    新規登録
+                  </Button>
                 </Stack>
               </Box>
             </Stack>
@@ -302,9 +340,6 @@ function BillingContent() {
               <Stack direction="row" spacing={2}>
                 <Button variant="outlined" startIcon={<CloudDownloadIcon />} component={Link} href="#">
                   CSVをエクスポート
-                </Button>
-                <Button variant="contained" color="secondary" startIcon={<SendIcon />}>
-                  一括で送付する
                 </Button>
               </Stack>
             </Stack>

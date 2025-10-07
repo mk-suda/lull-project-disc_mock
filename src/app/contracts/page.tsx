@@ -22,9 +22,11 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import DescriptionIcon from "@mui/icons-material/Description";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { alpha, type Theme } from "@mui/material/styles";
+ 
 
 interface ContractRecord {
   id: string;
@@ -36,6 +38,7 @@ interface ContractRecord {
   monthlyAmount: number;
   status: "active" | "expiring" | "draft";
   manager: string;
+  contractFileName?: string;
 }
 
 const contractRows: ContractRecord[] = [
@@ -49,6 +52,7 @@ const contractRows: ContractRecord[] = [
     monthlyAmount: 2800000,
     status: "active",
     manager: "田中 遥",
+    contractFileName: "ct-2404-0001_contract.pdf",
   },
   {
     id: "CT-2407-0003",
@@ -60,6 +64,7 @@ const contractRows: ContractRecord[] = [
     monthlyAmount: 3500000,
     status: "expiring",
     manager: "佐藤 健",
+    contractFileName: "ct-2407-0003_contract.pdf",
   },
   {
     id: "CT-2409-0006",
@@ -71,6 +76,7 @@ const contractRows: ContractRecord[] = [
     monthlyAmount: 2100000,
     status: "active",
     manager: "鈴木 智子",
+    contractFileName: "ct-2409-0006_contract.pdf",
   },
   {
     id: "CT-2409-0008",
@@ -82,6 +88,7 @@ const contractRows: ContractRecord[] = [
     monthlyAmount: 1800000,
     status: "draft",
     manager: "山田 樹",
+    contractFileName: "ct-2409-0008_contract.docx",
   },
 ];
 
@@ -131,6 +138,27 @@ const columns: GridColDef<ContractRecord>[] = [
       />
     ),
   },
+  {
+    field: "document",
+    headerName: "契約書",
+    width: 120,
+    sortable: false,
+    renderCell: (params: GridRenderCellParams<ContractRecord, string | undefined>) => {
+      const file = params.row.contractFileName;
+      return (
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<DescriptionIcon />}
+          component={Link}
+          href={file ? `/uploads?file=${encodeURIComponent(file)}` : "/uploads"}
+          disabled={!file}
+        >
+          表示
+        </Button>
+      );
+    },
+  },
   { field: "manager", headerName: "営業担当", width: 130 },
 ];
 
@@ -175,7 +203,7 @@ function ContractsContent() {
       <Stack spacing={4}>
         <Box></Box>
 
-        {/* 契約書アップロード + 契約情報入力 */}
+        {/* 契約情報入力 */}
         <Card variant="outlined">
           <CardContent>
             <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="stretch">
@@ -210,6 +238,10 @@ function ContractsContent() {
                   収益算出に必要な契約情報を入力してください
                 </Typography>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <TextField label="クライアント" size="small" sx={{ minWidth: 240 }} />
+                  <TextField label="案件名" size="small" sx={{ minWidth: 240 }} />
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
                   <FormControl size="small" sx={{ minWidth: 180 }}>
                     <InputLabel id="contract-type-select">契約種別</InputLabel>
                     <Select labelId="contract-type-select" label="契約種別" defaultValue="準委任">
@@ -241,6 +273,14 @@ function ContractsContent() {
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
                   <TextField label="契約開始日" type="date" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
                   <TextField label="契約終了日" type="date" size="small" sx={{ minWidth: 180 }} InputLabelProps={{ shrink: true }} />
+                </Stack>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 2 }}>
+                  <TextField label="営業担当" size="small" sx={{ minWidth: 200 }} />
+                </Stack>
+                <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
+                  <Button variant="contained" color="primary" startIcon={<AddCircleOutlineIcon />}>
+                    新規登録
+                  </Button>
                 </Stack>
               </Box>
             </Stack>
@@ -279,9 +319,6 @@ function ContractsContent() {
               <Stack direction="row" spacing={2}>
                 <Button variant="outlined" color="primary" startIcon={<PictureAsPdfIcon />} component={Link} href="#">
                   契約書を出力
-                </Button>
-                <Button variant="contained" color="secondary" startIcon={<AddCircleOutlineIcon />}>
-                  契約を新規登録
                 </Button>
               </Stack>
             </Stack>
