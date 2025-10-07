@@ -18,6 +18,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import type { SelectChangeEvent } from "@mui/material/Select";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import GroupsIcon from "@mui/icons-material/Groups";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -163,7 +164,12 @@ export default function CustomersPage() {
                 <TextField size="small" label="顧客名/ID 検索" value={text} onChange={(e) => setText(e.target.value)} sx={{ minWidth: 240 }} />
                 <FormControl size="small" sx={{ minWidth: 160 }}>
                   <InputLabel id="status-select-label">ステータス</InputLabel>
-                  <Select labelId="status-select-label" label="ステータス" value={status} onChange={(e) => setStatus(e.target.value as any)}>
+                  <Select
+                    labelId="status-select-label"
+                    label="ステータス"
+                    value={status}
+                    onChange={(e: SelectChangeEvent) => setStatus(e.target.value as ("all" | CustomerStatus))}
+                  >
                     <MenuItem value="all">全て</MenuItem>
                     <MenuItem value="prospect">見込み</MenuItem>
                     <MenuItem value="active">取引中</MenuItem>

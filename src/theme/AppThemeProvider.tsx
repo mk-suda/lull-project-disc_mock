@@ -84,7 +84,7 @@ export default function AppThemeProvider({ children, initialScheme }: PropsWithC
     const idx = keys.indexOf(scheme);
     const next = keys[(idx + 1) % keys.length];
     setSchemePersist(next);
-  }, [scheme]);
+  }, [scheme, setSchemePersist]);
 
   useServerInsertedHTML(() => {
     const names = Object.keys(cache.inserted);
