@@ -125,7 +125,7 @@ export const colorSchemes: Record<SchemeKey, Scheme> = {
     name: "Dark",
     palette: {
       // Primary
-      primary: { main: "#44A5D7", contrastText: "#FFFFFF" },
+      primary: { main: "#44A5C7", contrastText: "#FFFFFF" },
       secondary: { main: "#27405A", contrastText: "#FFFFFF" },
       accent: "#E9B81D",
       primaryLight: "#6EBDD5",

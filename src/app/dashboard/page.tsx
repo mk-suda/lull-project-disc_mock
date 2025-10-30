@@ -98,7 +98,11 @@ const divisionRevenueTrend: DivisionRevenuePoint[] = [
   { month: "10月", management: 3_000_000, techFlag: 4_350_000, dc: 2_450_000 },
 ];
 
-// divisionConfigはコンポーネント内でテーマから動的に生成されます
+const divisionConfig: { key: DivisionKey; label: string; color: string }[] = [
+  { key: "management", label: "管理事業部", color: "#003366" },
+  { key: "techFlag", label: "テックフラッグ事業部", color: "#00A9E0" },
+  { key: "dc", label: "DC事業部", color: "#FF7043" },
+];
 
 type ApprovalItem = {
   project: string;
@@ -173,13 +177,6 @@ export default function DashboardPage() {
   const axisColor = theme.palette.mode === "dark" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.38)";
   const gridColor = theme.palette.mode === "dark" ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.08)";
   const labelColor = theme.palette.mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.54)";
-
-  // テーマから動的に事業部カラーを取得
-  const divisionConfig: { key: DivisionKey; label: string; color: string }[] = [
-    { key: "management", label: "管理事業部", color: theme.palette.primary.main },
-    { key: "techFlag", label: "テックフラッグ事業部", color: theme.palette.secondary.main },
-    { key: "dc", label: "DC事業部", color: theme.palette.warning.main },
-  ];
   const maxRevenue = Math.max(...monthlyRevenueTrend.map((item) => item.amount));
   const latestRevenue = monthlyRevenueTrend[monthlyRevenueTrend.length - 1];
   const previousRevenue = monthlyRevenueTrend[monthlyRevenueTrend.length - 2];

@@ -29,8 +29,6 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const raw = cookieStore.get("theme-scheme")?.value as SchemeKey | undefined;
-
-  // 有効なスキームキーかチェック
   const validSchemes: SchemeKey[] = ["lull", "dark", "feminine", "green"];
   const initialScheme: SchemeKey = raw && validSchemes.includes(raw) ? raw : "lull";
   return (

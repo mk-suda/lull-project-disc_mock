@@ -26,7 +26,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { alpha, type Theme } from "@mui/material/styles";
- 
+
 
 interface ContractRecord {
   id: string;
@@ -307,7 +307,7 @@ function ContractsContent() {
           ))}
         </Grid>
 
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ bgcolor: "background.paper" }}>
           <CardContent>
             <Stack direction={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}>
               <Box>
@@ -330,6 +330,9 @@ function ContractsContent() {
                 pageSizeOptions={[5, 10]}
                 initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
                 sx={(theme) => ({
+                  bgcolor: theme.palette.mode === 'dark'
+                    ? (theme.palette as unknown as Record<string, unknown>).bgGray as string || '#1C2228'
+                    : 'background.paper',
                   "& .MuiDataGrid-columnHeaders": { fontWeight: 600 },
                   "& .MuiDataGrid-row.Mui-selected": {
                     backgroundColor: `rgba(${parseInt(theme.palette.secondary.main.slice(1,3),16)}, ${parseInt(theme.palette.secondary.main.slice(3,5),16)}, ${parseInt(theme.palette.secondary.main.slice(5,7),16)}, 0.08)`,

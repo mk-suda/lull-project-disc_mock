@@ -147,7 +147,7 @@ export default function ManagementLayout({
               LULL.inc
             </Typography>
           </Toolbar>
-          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }} />
+          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.18)" }} />
           <List>
             {navigationItems.map((item) => (
               <ListItem key={item.label} disablePadding>
