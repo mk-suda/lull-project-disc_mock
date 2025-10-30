@@ -28,9 +28,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const raw = cookieStore.get("theme-scheme")?.value as SchemeKey | "plum" | "charcoal" | undefined;
-  const normalized = raw === "plum" || raw === "charcoal" ? "dark" : (raw as SchemeKey | undefined);
-  const initialScheme = (normalized ?? "default") as SchemeKey;
+  const raw = cookieStore.get("theme-scheme")?.value as SchemeKey | undefined;
+  const validSchemes: SchemeKey[] = ["lull", "dark", "feminine", "green"];
+  const initialScheme: SchemeKey = raw && validSchemes.includes(raw) ? raw : "lull";
   return (
     <html lang="ja" data-scheme={initialScheme}>
       <body className={`${roboto.variable} ${notoSansJP.variable}`}>
