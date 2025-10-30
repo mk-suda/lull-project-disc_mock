@@ -210,7 +210,7 @@ export default function CustomersPage() {
         </Grid>
 
         {/* フィルタ＆アクション */}
-        <Card variant="outlined">
+        <Card variant="outlined" sx={{ bgcolor: "background.paper" }}>
           <CardContent>
             <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "stretch", md: "center" }} justifyContent="space-between">
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ xs: "stretch", sm: "center" }}>
@@ -256,6 +256,11 @@ export default function CustomersPage() {
                 disableRowSelectionOnClick
                 pageSizeOptions={[5, 10]}
                 initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
+                sx={(theme) => ({
+                  bgcolor: theme.palette.mode === 'dark'
+                    ? (theme.palette as unknown as Record<string, unknown>).bgGray as string || '#1C2228'
+                    : 'background.paper',
+                })}
               />
             </Box>
           </CardContent>
