@@ -61,14 +61,15 @@ export default function AppThemeProvider({ children, initialScheme }: PropsWithC
   });
   const [scheme, setScheme] = React.useState<SchemeKey>(() => {
     // SSR: use server-provided initialScheme
-    if (typeof window === "undefined") return initialScheme ?? "default";
-    // CSR: prefer data-scheme set on <html>, then cookie/localStorage value baked during SSR
+    if (typeof window === "undefined") return initialScheme ?? "lull";
+
+    // CSR: prefer data-scheme set on <html>, then cookie/localStorage value
     const dataScheme = document.documentElement.dataset.scheme as SchemeKey | undefined;
-    const stored = window.localStorage.getItem("theme-scheme") as SchemeKey | "plum" | "charcoal" | null;
-    const normalizedStored = stored === 'plum' || stored === 'charcoal' ? 'dark' : stored ?? undefined;
-    const initial = (dataScheme || initialScheme || normalizedStored || 'default') as SchemeKey;
-    const keys: SchemeKey[] = ["default", "teal", "royal", "dark", "blossom"];
-    return keys.includes(initial) ? initial : "default";
+    const stored = window.localStorage.getItem("theme-scheme") as SchemeKey | null;
+
+    const initial = dataScheme || initialScheme || stored || "lull";
+    const validSchemes: SchemeKey[] = ["lull", "dark", "feminine", "green"];
+    return validSchemes.includes(initial) ? initial : "lull";
   });
   const theme = useMemo(() => buildTheme(scheme), [scheme]);
   const setSchemePersist = React.useCallback((s: SchemeKey) => {
@@ -80,11 +81,11 @@ export default function AppThemeProvider({ children, initialScheme }: PropsWithC
     } catch {}
   }, []);
   const cycle = React.useCallback(() => {
-    const keys: SchemeKey[] = ["default", "teal", "royal", "dark", "blossom"];
+    const keys: SchemeKey[] = ["lull", "dark", "feminine", "green"];
     const idx = keys.indexOf(scheme);
     const next = keys[(idx + 1) % keys.length];
     setSchemePersist(next);
-  }, [scheme]);
+  }, [scheme, setSchemePersist]);
 
   useServerInsertedHTML(() => {
     const names = Object.keys(cache.inserted);
@@ -123,27 +124,16 @@ export default function AppThemeProvider({ children, initialScheme }: PropsWithC
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <GlobalStyles
-            styles={
-              {
-                body: {
-                  backgroundColor: theme.palette.background.default,
-                  color: theme.palette.text.primary,
-                },
-                // Hide half of x-axis ticks on very small screens to increase spacing
-                "@media (max-width:600px)": {
-                  ".x-tick.odd": { display: "none" },
-                },
-              // Headings in main inherit text color
-                "main .MuiTypography-h1, main .MuiTypography-h2, main .MuiTypography-h3, main .MuiTypography-h4, main .MuiTypography-h5, main .MuiTypography-h6": {
-                  color: theme.palette.text.primary,
-                },
-                // Dark-only: force all text to white (no impact to other themes)
-                'html[data-scheme="dark"] body, html[data-scheme="dark"] body *:not(svg):not(path):not(.MuiSvgIcon-root)': {
-                  color: '#FFFFFF !important',
-                },
-
-              }
-            }
+            styles={{
+              body: {
+                backgroundColor: theme.palette.background.default,
+                color: theme.palette.text.primary,
+              },
+              // Hide half of x-axis ticks on very small screens to increase spacing
+              "@media (max-width:600px)": {
+                ".x-tick.odd": { display: "none" },
+              },
+            }}
           />
           {children}
         </ThemeProvider>

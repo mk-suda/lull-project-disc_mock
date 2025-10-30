@@ -53,6 +53,8 @@ export default function ManagementLayout({
 }: ManagementLayoutProps) {
   const [isMobileDrawerOpen, setMobileDrawerOpen] = React.useState(false);
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
+  const themeContext = React.useContext(ThemeSchemeContext);
+  const isDark = themeContext?.scheme === "dark";
 
   const handleDrawerToggle = () => {
     setMobileDrawerOpen((prev) => !prev);
@@ -62,11 +64,17 @@ export default function ManagementLayout({
     <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "background.default" }}>
       <AppBar
         position="fixed"
-        color="primary"
         elevation={0}
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
+          backgroundColor: (theme) => {
+            if (isDark) {
+              return (theme.palette as unknown as Record<string, unknown>).bgLightGray as string || "#0D2236";
+            }
+            return (theme.palette as unknown as Record<string, unknown>).primaryLight as string || theme.palette.primary.main;
+          },
+          color: "#FFFFFF",
         }}
       >
         <Toolbar>
@@ -89,26 +97,25 @@ export default function ManagementLayout({
           {(ctx) => (
             <Select
               size="small"
-              value={(ctx?.scheme ?? "default") as SchemeKey}
+              value={(ctx?.scheme ?? "lull") as SchemeKey}
               onChange={(e) => ctx?.setScheme(e.target.value as SchemeKey)}
               variant="outlined"
               sx={{
                 ml: 2,
                 minWidth: 150,
                 color: "inherit",
-                "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.6)" },
+                "& .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.5)" },
                 "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.8)" },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#fff" },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,1)" },
                 "& .MuiSelect-icon": { color: "inherit" },
-                bgcolor: "transparent",
+                bgcolor: "rgba(255,255,255,0.15)",
               }}
               aria-label="カラーパターンを選択"
             >
-              <MenuItem value="default">Default</MenuItem>
-              <MenuItem value="teal">Teal</MenuItem>
-              <MenuItem value="royal">Apricot</MenuItem>
-              <MenuItem value="dark">Dark</MenuItem>
-              <MenuItem value="blossom">Blossom Pink</MenuItem>
+              <MenuItem value="lull">LULLカラー</MenuItem>
+              <MenuItem value="dark">ダークカラー</MenuItem>
+              <MenuItem value="feminine">フェミニンカラー</MenuItem>
+              <MenuItem value="green">グリーンカラー</MenuItem>
             </Select>
           )}
         </ThemeSchemeContext.Consumer>
@@ -125,8 +132,13 @@ export default function ManagementLayout({
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: drawerWidth,
-              backgroundColor: "primary.main",
-              color: "primary.contrastText",
+              backgroundColor: (theme) => {
+                if (isDark) {
+                  return (theme.palette as unknown as Record<string, unknown>).bgLightGray as string || "#0D2236";
+                }
+                return (theme.palette as unknown as Record<string, unknown>).primaryLight as string || theme.palette.primary.main;
+              },
+              color: "#FFFFFF",
             },
           }}
         >
@@ -135,7 +147,7 @@ export default function ManagementLayout({
               LULL.inc
             </Typography>
           </Toolbar>
-          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.18)" }} />
+          <Divider sx={{ borderColor: "rgba(255, 255, 255, 0.12)" }} />
           <List>
             {navigationItems.map((item) => (
               <ListItem key={item.label} disablePadding>
